@@ -20,10 +20,11 @@ type Props = {
   role: Role;
   onRole: (r: Role) => void;
   crumb?: string;
+  crumbLast?: string;
   onCrumbHome?: () => void;
 };
 
-export default function TopBar({ tabs, activeTab, onTab, onCloseTab, onNewTab, aiOpen, onToggleAi, nudge, role, onRole, crumb, onCrumbHome }: Props) {
+export default function TopBar({ tabs, activeTab, onTab, onCloseTab, onNewTab, aiOpen, onToggleAi, nudge, role, onRole, crumb, crumbLast, onCrumbHome }: Props) {
   const [menu, setMenu] = useState(false);
   const wrap = useRef<HTMLDivElement>(null);
 
@@ -48,7 +49,13 @@ export default function TopBar({ tabs, activeTab, onTab, onCloseTab, onNewTab, a
               <Lock size={11} />
             </button>
             <Chevron size={13} className="crumb-sep" />
-            <span className="crumb is-here">{crumb}</span>
+            <span className={`crumb ${crumbLast ? '' : 'is-here'}`}>{crumb}</span>
+            {crumbLast && (
+              <>
+                <Chevron size={13} className="crumb-sep" />
+                <span className="crumb is-here">{crumbLast}</span>
+              </>
+            )}
           </>
         )}
         {!crumb &&

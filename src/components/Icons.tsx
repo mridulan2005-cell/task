@@ -240,3 +240,12 @@ export const Calendar = ({ size = 14, className }: P) => (
     <path d="M3.5 10h17M8 3.5v4M16 3.5v4" />
   </svg>
 );
+
+export const Nodes = ({ size = 15, className }: P) => (
+  <svg {...base(size, className)}>
+    <rect x="2.6" y="9" width="6" height="6" rx="1.6" />
+    <rect x="15.4" y="3.4" width="6" height="6" rx="1.6" />
+    <rect x="15.4" y="14.6" width="6" height="6" rx="1.6" />
+    <path d="M8.6 11.4h2.6a1.8 1.8 0 0 0 1.8-1.8V8.2a1.8 1.8 0 0 1 1.8-1.8h0.6M8.6 12.6h2.6a1.8 1.8 0 0 1 1.8 1.8v1.4a1.8 1.8 0 0 0 1.8 1.8h0.6" />
+  </svg>
+);

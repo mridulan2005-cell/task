@@ -2,17 +2,18 @@ import { useMemo, useState } from 'react';
 import LineChart from './LineChart';
 import type { Series } from './LineChart';
 import Picker from './Picker';
+import ModelGraphView from './ModelGraphView';
 import { Handle, useColumns } from './Resizer';
 import { FORMATS, MODELS, MODEL_RANGES, defaults, modelLabels, modelPath, outcome, windowOf } from '../data/testbox';
 import type { ModelRange, Param, TestModel } from '../data/testbox';
-import { Box, Calendar, Check, Chevron, Pencil, Plus, Send, Spark, SrcDoc } from './Icons';
+import { Box, Calendar, Check, Chevron, Nodes, Pencil, Plus, Send, Spark, SrcDoc } from './Icons';
 
 type State = { params: Param[]; values: Record<string, number>; range: ModelRange };
 
 const dollars = (v: number) => `$${v.toFixed(2)}`;
 const dollarsAxis = (v: number) => `$${v.toFixed(0)}`;
 
-export default function ModelTestbox() {
+export default function ModelTestbox({ onGraph }: { onGraph: (name: string | null) => void }) {
   const cols = useColumns({ min: 208, max: 380, start: 244 }, { min: 300, max: 520, start: 384 });
 
   const [on, setOn] = useState<string[]>(MODELS.map((m) => m.id));
@@ -22,8 +23,15 @@ export default function ModelTestbox() {
     return out;
   });
   const [adding, setAdding] = useState<string | null>(null);
+  const [graph, setGraph] = useState<string | null>(null);
 
   const shown = MODELS.filter((m) => on.includes(m.id));
+  const wired = MODELS.find((m) => m.id === graph);
+
+  function openGraph(id: string | null) {
+    setGraph(id);
+    onGraph(id ? MODELS.find((m) => m.id === id)!.name : null);
+  }
 
   function setValue(id: string, pid: string, v: number) {
     setState((s) => ({ ...s, [id]: { ...s[id], values: { ...s[id].values, [pid]: v } } }));
@@ -46,7 +54,7 @@ export default function ModelTestbox() {
   }
 
   return (
-    <main className="testbox" style={{ gridTemplateColumns: cols.template }}>
+    <main className={`testbox ${wired ? 'is-wired' : ''}`} style={{ gridTemplateColumns: wired ? `${cols.l}px 6px minmax(0, 1fr)` : cols.template }}>
       <section className="card panel runlist">
         <header className="panel-head">
           <div>
@@ -94,6 +102,16 @@ export default function ModelTestbox() {
 
       <Handle onDown={cols.start('l')} label="Resize the model list" />
 
+      {wired ? (
+        <ModelGraphView
+          model={wired}
+          params={state[wired.id].params}
+          values={state[wired.id].values}
+          range={state[wired.id].range}
+          onRange={(r) => setRange(wired.id, r)}
+          onBack={() => openGraph(null)}
+        />
+      ) : (
       <div className="testbox-mid">
         {shown.map((m) => (
           <ModelCard
@@ -106,6 +124,7 @@ export default function ModelTestbox() {
             onCloseAdd={() => setAdding(null)}
             onValue={(pid, v) => setValue(m.id, pid, v)}
             onRange={(r) => setRange(m.id, r)}
+            onOpenGraph={() => openGraph(m.id)}
             onReset={() => reset(m.id)}
           />
         ))}
@@ -118,10 +137,11 @@ export default function ModelTestbox() {
           </section>
         )}
       </div>
+      )}
 
-      <Handle onDown={cols.start('r')} label="Resize the report" />
+      {!wired && <Handle onDown={cols.start('r')} label="Resize the report" />}
 
-      <LiveReport shown={shown} state={state} />
+      {!wired && <LiveReport shown={shown} state={state} />}
     </main>
   );
 }
@@ -137,6 +157,7 @@ function ModelCard({
   onCloseAdd,
   onValue,
   onRange,
+  onOpenGraph,
   onReset,
 }: {
   model: TestModel;
@@ -147,6 +168,7 @@ function ModelCard({
   onCloseAdd: () => void;
   onValue: (pid: string, v: number) => void;
   onRange: (r: ModelRange) => void;
+  onOpenGraph: () => void;
   onReset: () => void;
 }) {
   const series: Series[] = useMemo(
@@ -154,12 +176,13 @@ function ModelCard({
     [model, state],
   );
   const labels = useMemo(() => modelLabels(state.range), [state.range]);
+  const [scrub, setScrub] = useState<string | null>(null);
 
   const moved = state.params.some((p) => (state.values[p.id] ?? p.def) !== p.def);
   const free = model.extra.filter((e) => !state.params.some((p) => p.id === e.id));
 
   return (
-    <section className="card bench">
+    <section className="card bench" onDoubleClick={onOpenGraph}>
       <header className="bench-head">
         <div>
           <div className="card-title">{model.name}</div>
@@ -167,11 +190,16 @@ function ModelCard({
             {model.on} &middot; {model.summary}
           </div>
         </div>
-        {moved && (
-          <button className="ghost-b" onClick={onReset}>
-            Reset
+        <div className="bench-tools">
+          {moved && (
+            <button className="ghost-b" onClick={onReset}>
+              Reset
+            </button>
+          )}
+          <button className="node-btn" onClick={onOpenGraph} title="Open the model wiring">
+            <Nodes size={15} />
           </button>
-        )}
+        </div>
       </header>
 
       <div className="bench-ranges">
@@ -200,7 +228,13 @@ function ModelCard({
             const pos = ((v - p.min) / (p.max - p.min)) * 100;
             return (
               <li key={p.id}>
-                <span className="param-l">{p.label}</span>
+                <span className="param-top">
+                  <span className="param-l">{p.label}</span>
+                  <span className={`param-v ${v !== p.def ? 'is-moved' : ''}`}>
+                    {v}
+                    {p.unit && <em>{p.unit}</em>}
+                  </span>
+                </span>
                 <span className="param-slider">
                   <input
                     type="range"
@@ -209,12 +243,23 @@ function ModelCard({
                     step={p.step}
                     value={v}
                     onChange={(e) => onValue(p.id, +e.target.value)}
+                    onPointerEnter={() => setScrub(p.id)}
+                    onPointerDown={() => setScrub(p.id)}
+
+                    onPointerLeave={() => setScrub(null)}
+                    onFocus={() => setScrub(p.id)}
+                    onBlur={() => setScrub(null)}
                     style={{ backgroundSize: `${pos}% 100%` }}
                   />
-                </span>
-                <span className={`param-v ${v !== p.def ? 'is-moved' : ''}`}>
-                  {v}
-                  {p.unit && <em>{p.unit}</em>}
+                  {/* the bubble rides the thumb, inset so it never leaves the track */}
+                  <span className={`param-bubble ${scrub === p.id ? 'is-on' : ''}`} style={{ left: `calc(${pos}% + ${7 - pos * 0.14}px)` }}>
+                    {v}
+                    {p.unit && <em>{p.unit}</em>}
+                  </span>
+                  <span className="param-ends">
+                    <em>{p.min}</em>
+                    <em>{p.max}</em>
+                  </span>
                 </span>
               </li>
             );

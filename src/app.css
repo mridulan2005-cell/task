@@ -3932,3 +3932,340 @@ button.crumb:hover {
 
 .bench-window svg { color: var(--ink-4); }
 
+
+/* two parameters to a row, value bubble while scrubbing */
+.bench-params ul {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 20px;
+}
+
+.bench-params li {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.param-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+.param-slider {
+  position: relative;
+  display: block;
+  padding-bottom: 11px;
+}
+
+.param-bubble {
+  position: absolute;
+  bottom: 12px;
+  transform: translateX(-50%);
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: #1c1e20;
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+  z-index: 5;
+}
+
+.param-bubble.is-on { opacity: 1; }
+
+.param-bubble em {
+  font-style: normal;
+  color: rgba(255, 255, 255, 0.55);
+  margin-left: 2px;
+}
+
+.param-ends {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  font-size: 9.5px;
+  color: var(--ink-4);
+}
+
+.param-ends em { font-style: normal; }
+
+@media (max-width: 1280px) {
+  .bench-params ul { grid-template-columns: 1fr; }
+}
+
+
+/* ============================================================
+   Model wiring view
+   ============================================================ */
+
+.bench-tools {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.node-btn {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  color: var(--ink-4);
+  opacity: 0;
+  transform: scale(0.92);
+  transition: opacity 0.16s ease, transform 0.16s ease, background 0.14s ease, color 0.14s ease;
+}
+
+.bench:hover .node-btn {
+  opacity: 1;
+  transform: none;
+}
+
+.node-btn:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.graphview {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+  grid-template-rows: minmax(0, 1fr) minmax(0, 230px);
+  gap: 10px;
+}
+
+.canvas-panel { min-width: 0; }
+.terminal { min-width: 0; }
+.graph-model { grid-column: 2; grid-row: 1; }
+.graph-ai { grid-column: 2; grid-row: 2; }
+
+/* the wiring canvas */
+
+.canvas-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 4px 12px 14px;
+}
+
+.canvas-inner {
+  position: relative;
+}
+
+.wires {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.wire {
+  fill: none;
+  stroke: var(--line-strong);
+  stroke-width: 1.4;
+  transition: stroke 0.16s ease, opacity 0.16s ease;
+}
+
+.wire.is-on {
+  stroke: var(--accent);
+  stroke-width: 1.8;
+}
+
+.wire.is-dim { opacity: 0.35; }
+
+.gnode {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+  padding: 0 11px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: #fff;
+  text-align: left;
+  box-shadow: 0 1px 2px rgba(17, 18, 19, 0.05);
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+}
+
+.gnode:hover { border-color: var(--ink-3); }
+
+.gnode.is-on {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.gnode.is-dim { opacity: 0.42; }
+
+.gnode-k {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+}
+
+.k-source .gnode-k { color: #3b5bbd; }
+.k-assumption .gnode-k { color: var(--warn); }
+.k-output .gnode-k { color: var(--up); }
+
+.gnode-l {
+  font-size: 12.25px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gnode-d {
+  font-size: 10.5px;
+  color: var(--ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* sources terminal */
+
+.term-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 8px 12px 8px 10px;
+  border-bottom: 1px solid var(--line-2);
+}
+
+.term-tabs {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.term-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 27px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: 11.75px;
+  color: var(--ink-3);
+  white-space: nowrap;
+  transition: background 0.14s ease, color 0.14s ease;
+}
+
+.term-tab:hover { background: var(--panel-2); }
+
+.term-tab.is-on {
+  background: #f2f3f4;
+  color: var(--ink-1);
+  font-weight: 500;
+}
+
+.term-add { position: relative; margin-left: 2px; }
+
+.term-note {
+  font-size: 10.5px;
+  color: var(--ink-4);
+  white-space: nowrap;
+}
+
+.term-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  margin: 0;
+  padding: 12px 14px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  white-space: pre;
+  tab-size: 2;
+}
+
+/* right column in the wiring view */
+
+.graph-ranges {
+  padding: 10px 14px 4px;
+}
+
+.graph-ranges .range-b {
+  height: 21px;
+  padding: 0 7px;
+  font-size: 10.5px;
+}
+
+.graph-model .chart { padding: 0 8px; }
+
+.bench-window.in-graph {
+  margin: 4px 14px 14px;
+  align-self: flex-start;
+}
+
+.graph-ai .panel-head .card-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.gai-msg {
+  margin: 0 0 14px;
+  font-size: 12.25px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+
+.gai-actions {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.gai-actions button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--panel-2);
+  text-align: left;
+  font-size: 12px;
+  transition: background 0.14s ease, border-color 0.14s ease;
+}
+
+.gai-actions button:hover {
+  background: #fff;
+  border-color: var(--line-strong);
+}
+
+.gai-actions span:first-child { flex: 1; min-width: 0; }
+
+.gai-actions button:hover .next-go {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+@media (max-width: 1240px) {
+  .graphview { grid-template-columns: minmax(0, 1fr) minmax(260px, 300px); }
+}
+

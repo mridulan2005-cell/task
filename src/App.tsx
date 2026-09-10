@@ -28,6 +28,7 @@ export default function App() {
   const [nav, setNav] = useState('dashboard');
   const [role, setRole] = useState<Role>(analystLink ? 'analyst' : 'pm');
   const [view, setView] = useState<'work' | 'testbox'>(hash === '#testbox' ? 'testbox' : 'work');
+  const [graphCrumb, setGraphCrumb] = useState<string | null>(null);
   const [tabs, setTabs] = useState([{ id: 'w1', label: 'My workspace' }]);
   const [activeTab, setActiveTab] = useState('w1');
   const [tasks, setTasks] = useState<AiTask[]>([]);
@@ -116,7 +117,11 @@ export default function App() {
           role={role}
           onRole={switchRole}
           crumb={view === 'testbox' ? 'Model testbox' : undefined}
-          onCrumbHome={() => setView('work')}
+          crumbLast={view === 'testbox' ? graphCrumb ?? undefined : undefined}
+          onCrumbHome={() => {
+            setView('work');
+            setGraphCrumb(null);
+          }}
         />
 
         <div className="body">
@@ -133,7 +138,7 @@ export default function App() {
               </div>
             </main>
           ) : view === 'testbox' ? (
-            <ModelTestbox />
+            <ModelTestbox onGraph={setGraphCrumb} />
           ) : (
             <AnalystWorkspace onOpenTestbox={() => setView('testbox')} />
           )}
