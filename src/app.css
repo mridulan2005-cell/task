@@ -6276,3 +6276,150 @@ i.ok {
 
 .testbox.is-wired { align-items: stretch; }
 
+
+/* ============================================================
+   Figma pass: flat header, softer ground, corrected surfaces
+   ============================================================ */
+
+/* the header sits on the page rather than in a bar */
+.top {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0 6px 0 4px;
+  height: 52px;
+  flex-basis: 52px;
+}
+
+.top-search {
+  background: #fff;
+  border-color: var(--line);
+  width: 268px;
+  height: 34px;
+  border-radius: 10px;
+}
+
+.wtab.is-on { background: #ececec; }
+.crumb.is-here { background: #ececec; }
+
+.icon-btn.has-dot::after { border-color: var(--bg); }
+
+/* a quieter primary for shelves and lists */
+.btn-soft {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  background: #f0f0f0;
+  color: var(--ink-1);
+  font-size: 12.75px;
+  font-weight: 500;
+  transition: background 0.14s ease;
+}
+
+.btn-soft:hover { background: #e8e8e8; }
+.btn-soft.wide { width: 100%; }
+
+/* the run list and its create button */
+.runlist .btn-soft { height: 34px; }
+
+.run.is-on {
+  border-color: #bcd9f6;
+  box-shadow: none;
+  background: #f7fbff;
+}
+
+.run.is-on .run-box { background: var(--accent); color: #fff; }
+
+/* the fresh idea belongs to the agent, so it takes the accent */
+.idea.is-fresh {
+  background: #f2f8fe;
+  border-color: #cbe2f8;
+}
+
+.idea.is-fresh.is-on {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.idea.is-fresh .idea-flag { color: var(--accent); }
+.idea-state.s-new { background: #e3f0fd; color: var(--accent); }
+
+.idea-keep {
+  background: var(--accent);
+}
+
+.idea-keep:hover { background: var(--accent-hover); opacity: 1; }
+
+/* templates in the copilot show what they cost */
+.tpl-list.in-ai .tpl-row { padding: 9px 10px; }
+.tpl-list.in-ai .tpl-name { font-weight: 400; }
+.tpl-list.in-ai .tpl-name em { color: var(--ink-4); }
+.tpl-list.in-ai .tpl-tools { display: none; }
+.tpl-rec { background: var(--up-bg); color: var(--up); }
+
+/* bench parameters centre over their track */
+.param-top {
+  justify-content: center;
+  gap: 8px;
+}
+
+.param-l { font-size: 12px; color: var(--ink-2); }
+.param-v { font-size: 13px; color: var(--ink-1); }
+
+.param-slider input[type='range'] {
+  height: 4px;
+  border-radius: 3px;
+}
+
+/* the drop chips float over the canvas, bottom right */
+.graph-main { position: relative; }
+
+.drops {
+  position: absolute;
+  right: 16px;
+  bottom: 236px;
+  z-index: 6;
+}
+
+.canvas-dots {
+  background-image: radial-gradient(circle, #e2e4e6 1px, transparent 1px);
+}
+
+/* other models read as a plain list under the model */
+.graph-others {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.graph-others .panel-head { padding: 14px 4px 6px; }
+
+.graph-others .panel-body { padding: 0 4px; }
+
+.graph-others .runs { gap: 0; }
+
+.graph-others .run {
+  border: none;
+  border-radius: 0;
+  border-top: 1px solid var(--line);
+  background: transparent;
+  padding: 11px 2px;
+}
+
+.graph-others .run:hover { background: transparent; border-color: var(--line-strong); }
+.graph-others .run-n { font-size: 12.5px; }
+
+
+.metrics.is-plain {
+  border-bottom: none;
+  margin-bottom: 6px;
+}
+
+.metrics.is-plain .metric {
+  background: transparent;
+}
+

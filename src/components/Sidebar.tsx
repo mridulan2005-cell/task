@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { WATCHLIST } from '../data/fund';
 import Sparkline from './Sparkline';
-import { Agents, Book, Bookmark, Chevron, Exit, Eye, Gear, Grid, Mark, Panel, Plus, Search } from './Icons';
+import { Agents, Chevron, Exit, Eye, Gear, Grid, Mark, Panel, Plus, Search } from './Icons';
 import type { Role } from './TopBar';
 
 type Props = {
@@ -14,23 +14,14 @@ type Props = {
 
 const NAV = [
   { key: 'dashboard', label: 'Dashboard', icon: Grid },
-  { key: 'saved', label: 'Saved', icon: Bookmark },
   { key: 'agents', label: 'Agents', icon: Agents, badge: '6' },
-  { key: 'research', label: 'Research', icon: Book },
 ];
-
-const FUND: Record<Role, { name: string; sub: string }> = {
-  pm: { name: 'Rise Alpha I', sub: '$128.4M · PM view' },
-  analyst: { name: 'Rise Alpha I', sub: '10 ideas live' },
-  risk: { name: 'Rise Alpha I', sub: '1,842 rules watched' },
-};
 
 export default function Sidebar({ collapsed, onToggle, active, onNavigate, role }: Props) {
   const [listOpen, setListOpen] = useState(true);
   const [q, setQ] = useState('');
 
   const rows = WATCHLIST.filter((w) => w.ticker.toLowerCase().includes(q.toLowerCase()) || w.name.toLowerCase().includes(q.toLowerCase()));
-  const fund = FUND[role];
 
   return (
     <aside className={`rail ${collapsed ? 'is-collapsed' : ''}`}>
@@ -109,16 +100,6 @@ export default function Sidebar({ collapsed, onToggle, active, onNavigate, role 
             </>
           )}
         </section>
-      )}
-
-      {!collapsed && (
-        <div className="rail-block">
-          <div className="rail-block-h">Fund</div>
-          <div className="rail-fund">
-            <span className="rail-fund-name">{fund.name}</span>
-            <span className="rail-fund-sub">{fund.sub}</span>
-          </div>
-        </div>
       )}
 
       <div className="rail-foot">

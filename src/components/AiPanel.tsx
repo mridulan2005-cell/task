@@ -72,7 +72,7 @@ export default function AiPanel({ tasks, nudge, role, context, mode, onClearCont
           )}
 
           <div className="ai-body">
-            {context && context.kind !== 'idea' && (
+            {context && (context.kind === 'need' || context.kind === 'signal') && (
               <div className={`ai-tag k-${context.kind}`}>
                 <div className="ai-tag-h">
                   <span className="ai-tag-k">{TAG_LABEL[context.kind]}</span>
@@ -107,22 +107,6 @@ export default function AiPanel({ tasks, nudge, role, context, mode, onClearCont
               </div>
             )}
           </div>
-
-          {context?.actions && (
-            <div className="ai-sugg">
-              <div className="block-h as-label">Suggested actions</div>
-              <ul>
-                {context.actions.map((a) => (
-                  <li key={a}>
-                    <button onClick={() => send(a)}>
-                      {a}
-                      <Send size={12} />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
 
           <div className="ai-sugg">
             <div className="block-h as-label">Suggested questions</div>
@@ -178,7 +162,7 @@ function Templates({ context, onCreateModel }: { context: AiContext | null; onCr
   return (
     <>
       <div className="ai-cta">
-        <button className="btn-dark wide" onClick={onCreateModel}>
+        <button className="btn-soft wide" onClick={onCreateModel}>
           <Spark size={13} />
           Create model
         </button>

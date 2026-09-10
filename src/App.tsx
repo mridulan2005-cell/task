@@ -20,7 +20,8 @@ export default function App() {
   const hash = typeof window === 'undefined' ? '' : window.location.hash;
   const analystLink = hash === '#analyst' || hash === '#testbox';
 
-  const [collapsed, setCollapsed] = useState(false);
+  /* Only a dashboard gets the full rail; every other workspace folds it. */
+  const [collapsed, setCollapsed] = useState(analystLink);
   const [nav, setNav] = useState('dashboard');
   const [role, setRole] = useState<Role>(analystLink ? 'analyst' : hash === '#risk' ? 'risk' : 'pm');
   const [view, setView] = useState<'work' | 'testbox'>(hash === '#testbox' ? 'testbox' : 'work');
@@ -57,6 +58,7 @@ export default function App() {
     setView('work');
     setGraphCrumb(null);
     setContext(null);
+    setCollapsed(r === 'analyst');
   }
 
   function newTab() {

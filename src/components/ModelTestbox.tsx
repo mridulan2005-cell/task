@@ -129,7 +129,7 @@ export default function ModelTestbox({ onGraph, onContext }: { onGraph: (name: s
         </div>
 
         <footer className="panel-foot">
-          <button className="btn-dark wide">
+          <button className="btn-soft wide">
             <Spark size={13} />
             Create
           </button>

@@ -20,15 +20,6 @@ export default function PmDashboard({
 
   return (
     <main className="canvas pm">
-      <header className="pm-head">
-        <div className="pm-crumb">Portfolio</div>
-        <div className="pm-price">
-          $128,430,000
-          <span className="up">+12.41% (+$14.18M) year to date</span>
-        </div>
-        <div className="pm-when">Sep 11, 5:07 PM UTC &middot; USD</div>
-      </header>
-
       <MetricStrip plain />
 
       <PortfolioCard />
