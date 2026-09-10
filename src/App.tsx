@@ -1,18 +1,14 @@
 import { useEffect, useState } from 'react';
 import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
-import PortfolioCard from './components/PortfolioCard';
-import MetricStrip from './components/MetricStrip';
-import AllocationCard from './components/AllocationCard';
-import NeedsYou from './components/NeedsYou';
-import { ProposalsCard, SignalsCard } from './components/SignalsCard';
+import PmDashboard from './components/PmDashboard';
 import AiPanel from './components/AiPanel';
 import AnalystWorkspace from './components/AnalystWorkspace';
 import ModelTestbox from './components/ModelTestbox';
 import RiskWorkspace from './components/RiskWorkspace';
 import SelectionAsk from './components/SelectionAsk';
 import { answerFor, clockNow } from './data/ai';
-import type { AiTask } from './data/ai';
+import type { AiContext, AiTask } from './data/ai';
 import type { Role } from './components/TopBar';
 import './app.css';
 
@@ -32,6 +28,7 @@ export default function App() {
   const [tabs, setTabs] = useState([{ id: 'w1', label: 'My workspace' }]);
   const [activeTab, setActiveTab] = useState('w1');
   const [tasks, setTasks] = useState<AiTask[]>([]);
+  const [context, setContext] = useState<AiContext | null>(null);
 
   /* A question asked from a selection runs in the background. Nothing steals
      focus; the copilot panel carries the only signal until it is read. */
@@ -59,6 +56,7 @@ export default function App() {
     setRole(r);
     setView('work');
     setGraphCrumb(null);
+    setContext(null);
   }
 
   function newTab() {
@@ -98,14 +96,7 @@ export default function App() {
           {role === 'risk' ? (
             <RiskWorkspace />
           ) : role === 'pm' ? (
-            <main className="canvas">
-              <MetricStrip />
-              <PortfolioCard />
-              <NeedsYou />
-              <SignalsCard />
-              <ProposalsCard />
-              <AllocationCard />
-            </main>
+            <PmDashboard context={context} onContext={setContext} />
           ) : view === 'testbox' ? (
             <ModelTestbox onGraph={setGraphCrumb} />
           ) : (
@@ -114,7 +105,7 @@ export default function App() {
         </div>
       </div>
 
-      <AiPanel tasks={tasks} nudge={nudge} role={role} />
+      <AiPanel tasks={tasks} nudge={nudge} role={role} context={context} onClearContext={() => setContext(null)} onAsk={ask} />
 
       <SelectionAsk onAsk={ask} />
     </div>

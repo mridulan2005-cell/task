@@ -269,3 +269,11 @@ export const Trash = ({ size = 13, className }: P) => (
     <path d="M4.6 6.6h14.8M9.4 6.6V4.8h5.2v1.8M6.4 6.6l.9 12.2a1.6 1.6 0 0 0 1.6 1.5h6.2a1.6 1.6 0 0 0 1.6-1.5l.9-12.2" />
   </svg>
 );
+
+export const Target = ({ size = 15, className }: P) => (
+  <svg {...base(size, className)}>
+    <circle cx="12" cy="12" r="8.2" />
+    <circle cx="12" cy="12" r="3.4" />
+    <path d="M12 1.8v2.4M12 19.8v2.4M1.8 12h2.4M19.8 12h2.4" />
+  </svg>
+);

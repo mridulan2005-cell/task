@@ -5,7 +5,7 @@ import Picker from './Picker';
 
 const MAX = 5;
 
-export default function MetricStrip() {
+export default function MetricStrip({ plain = false }: { plain?: boolean }) {
   const [shown, setShown] = useState(['nav', 'risk', 'day', 'cash']);
   const [editing, setEditing] = useState<number | null>(null);
   const [adding, setAdding] = useState(false);
@@ -25,7 +25,7 @@ export default function MetricStrip() {
   }
 
   return (
-    <div className="metrics">
+    <div className={`metrics ${plain ? 'is-plain' : ''}`}>
       {shown.map((id, slot) => {
         const m = METRICS.find((x) => x.id === id)!;
         /* Colour the number only when it carries a sign of its own; a level

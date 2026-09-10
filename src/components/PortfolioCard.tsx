@@ -21,7 +21,6 @@ const pct = (n: number) => `${n >= 0 ? '+' : ''}${n.toFixed(2)}%`;
 
 export default function PortfolioCard() {
   const [range, setRange] = useState<Range>('YTD');
-  const [tab, setTab] = useState<Tab>('Positions');
   const [book, setBook] = useState('total');
   const [comps, setComps] = useState(['SPX', 'DJIA']);
   const [openSlot, setOpenSlot] = useState<number | null>(null);
@@ -146,6 +145,16 @@ export default function PortfolioCard() {
 
       <LineChart labels={labels} series={lines} height={252} format={money} formatAxis={moneyAxis} />
 
+    </section>
+  );
+}
+
+/* The tabs sit under the chart on the page ground, not inside the card. */
+export function PortfolioTabs() {
+  const [tab, setTab] = useState<Tab>('Positions');
+
+  return (
+    <section className="pm-tabs">
       <div className="tabbar">
         <div className="tabs">
           {TABS.map((t) => (

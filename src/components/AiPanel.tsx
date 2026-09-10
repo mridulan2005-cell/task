@@ -1,39 +1,38 @@
 import { useState } from 'react';
-import { Chevron, Clip, Send, Spark } from './Icons';
+import { Chevron, Clip, Plus, Send, Spark, Target, X } from './Icons';
 import type { Role } from './TopBar';
-import type { AiTask } from '../data/ai';
+import type { AiContext, AiTask } from '../data/ai';
 
-type Props = { tasks: AiTask[]; nudge: string; role: Role };
-
-const BRIEF: Record<Role, { title: string; lead: string; body: string; asks: string[] }> = {
-  pm: {
-    title: 'Fund copilot',
-    lead: 'Your morning report is ready, as usual.',
-    body: 'Two items cleared overnight. Semis breached the sector cap at 14:32 and Risk has a trim waiting on you. The PLTR order is still held by Compliance.',
-    asks: ['Why did semis go over the cap?', 'Show me the drafted TSM and ASML trim', 'What changed in the UNH thesis today?'],
-  },
-  analyst: {
-    title: 'Research copilot',
-    lead: 'Three ideas moved while you were away.',
-    body: 'The screener added Vertiv this morning and the backlog conflict is still open. Two models finished overnight and one is waiting on a stale feed.',
-    asks: ['Reconcile the two backlog filings', 'Which ideas have no model yet?', 'Summarise what the screener found'],
-  },
-  risk: {
-    title: 'Risk copilot',
-    lead: 'The book is inside policy.',
-    body: 'Two exceptions need you: the PLTR restricted-list override and the technology sector limit request. Everything else cleared without a human.',
-    asks: ['What would a 28% tech limit do to VaR?', 'Show every rule PLTR trips', 'Which limits came closest today?'],
-  },
+type Props = {
+  tasks: AiTask[];
+  nudge: string;
+  role: Role;
+  context: AiContext | null;
+  onClearContext: () => void;
+  onAsk: (quote: string, question: string) => void;
 };
 
-export default function AiPanel({ tasks, nudge, role }: Props) {
-  const brief = BRIEF[role];
+const ASKS: Record<Role, string[]> = {
+  pm: ['What moved the book today?', 'Which limits are closest to breaching?', 'Summarise what the agents did overnight'],
+  analyst: ['Reconcile the two backlog filings', 'Which ideas have no model yet?', 'Summarise what the screener found'],
+  risk: ['What would a 28% tech limit do to VaR?', 'Show every rule PLTR trips', 'Which limits came closest today?'],
+};
+
+export default function AiPanel({ tasks, nudge, role, context, onClearContext, onAsk }: Props) {
+  const [draft, setDraft] = useState('');
+  const asks = context?.questions ?? ASKS[role];
+
+  function send(question: string) {
+    if (!question.trim()) return;
+    onAsk(context ? `${context.title} — ${context.sub}` : 'the workspace', question.trim());
+    setDraft('');
+  }
+
   return (
     <aside className="ai" data-ask-exempt>
       <header className="ai-head">
         <span className="ai-title">
-          <Spark />
-          {brief.title}
+          What&rsquo;s on your mind?
           <i className={`ai-dot n-${nudge}`} title={nudge === 'working' ? 'Working' : nudge === 'ready' ? 'An answer is ready' : 'Idle'} />
         </span>
         <div className="ai-head-tools">
@@ -43,37 +42,76 @@ export default function AiPanel({ tasks, nudge, role }: Props) {
         </div>
       </header>
 
-      <div className="ai-body">
-        <div className="ai-stamp">Today, 08:02</div>
+      <div className="ai-quick">
+        <button>
+          <Target size={15} />
+          Enter fund goals
+        </button>
+        <button>
+          <Spark size={15} />
+          Input ideas
+        </button>
+      </div>
 
-        <div className="ai-msg">
-          <p>{brief.lead}</p>
-          <p className="ai-dim">{brief.body}</p>
-          <div className="ai-sources">
-            <span className="chip">46 sources</span>
-            <span className="chip">6 agents</span>
+      <div className="ai-body">
+        {context && (
+          <div className={`ai-tag k-${context.kind}`}>
+            <div className="ai-tag-h">
+              <span className="ai-tag-k">{context.kind === 'need' ? 'Tagged decision' : 'Tagged signal'}</span>
+              <button className="icon-btn" onClick={onClearContext} title="Clear">
+                <X size={11} />
+              </button>
+            </div>
+            <div className="ai-tag-t">{context.title}</div>
+            <div className="ai-tag-s">{context.sub}</div>
+
+            {context.action && (
+              <div className="ai-action">
+                <div className="block-h as-label">Next proposed action</div>
+                <p className="ai-action-t">{context.action.text}</p>
+                <p className="ai-action-d">{context.action.detail}</p>
+                <div className="ai-action-b">
+                  <button className="btn-dark">Approve</button>
+                  <button className="btn-quiet">Adjust</button>
+                </div>
+              </div>
+            )}
           </div>
-          <button className="btn-outline">Live new report</button>
-        </div>
+        )}
 
         {tasks.map((t) => (
           <TaskCard key={t.id} task={t} />
         ))}
 
-        {tasks.length === 0 && (
-          <div className="ai-followups">
-            {brief.asks.map((f) => (
-              <button key={f} className="ai-follow">
-                {f}
-              </button>
-            ))}
+        {tasks.length === 0 && !context && (
+          <div className="ai-idle">
+            <p>Pick a card on the left and I will work from it. Or just ask.</p>
           </div>
         )}
       </div>
 
+      <div className="ai-sugg">
+        <div className="block-h as-label">Suggested questions</div>
+        <ul>
+          {asks.map((a) => (
+            <li key={a}>
+              <button onClick={() => send(a)}>{a}</button>
+            </li>
+          ))}
+        </ul>
+      </div>
+
       <div className="ai-compose">
-        <input placeholder="Ask about the book, a name, or an agent" />
-        <button className="ai-send" title="Send">
+        <button className="ai-plus" title="Add context">
+          <Plus size={15} />
+        </button>
+        <input
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && send(draft)}
+          placeholder={context ? `Ask about ${context.title.split(' · ')[0]}` : 'Ask about the book, a name, or an agent'}
+        />
+        <button className="ai-send" onClick={() => send(draft)} disabled={!draft.trim()} title="Send">
           <Send />
         </button>
       </div>

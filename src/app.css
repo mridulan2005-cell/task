@@ -5725,3 +5725,377 @@ i.ok {
 /* the metric row and the signal rows breathe at full width */
 .sig-bot { padding-left: 46px; }
 
+
+/* ============================================================
+   Portfolio manager, laid out the way Google Finance reads
+   ============================================================ */
+
+.canvas.pm {
+  gap: 0;
+  padding: 0 2px 0 0;
+}
+
+.pm-head {
+  padding: 4px 4px 14px;
+}
+
+.pm-crumb {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-bottom: 6px;
+}
+
+.pm-price {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.pm-price span {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.pm-when {
+  font-size: 11.5px;
+  color: var(--ink-3);
+  margin-top: 4px;
+}
+
+/* stats sit on the page, not in cards */
+
+.metrics.is-plain {
+  gap: 0;
+  margin: 0 0 12px;
+  padding: 0 4px;
+  border-bottom: 1px solid var(--line);
+}
+
+.metrics.is-plain .metric {
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 2px 22px 12px 0;
+  flex: 0 1 auto;
+  min-width: 118px;
+}
+
+.metrics.is-plain .metric:hover,
+.metrics.is-plain .metric.is-open {
+  border: none;
+  box-shadow: none;
+}
+
+.metrics.is-plain .metric-k {
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  padding-right: 18px;
+}
+
+.metrics.is-plain .metric-v {
+  font-size: 19px;
+  margin-top: 2px;
+}
+
+.metrics.is-plain .metric-s { font-size: 11px; }
+
+.metrics.is-plain .metric-edit { top: -2px; right: 6px; }
+
+.metrics.is-plain .metric-add-wrap { align-items: flex-start; }
+
+.metrics.is-plain .metric-add {
+  height: 34px;
+  border-radius: 9px;
+  margin-top: 2px;
+}
+
+/* the chart is the only thing in a card */
+
+.canvas.pm .portfolio { padding: 14px 16px 10px; }
+
+/* the tabs sit under it on the ground */
+
+.pm-tabs {
+  padding: 2px 4px 6px;
+}
+
+.pm-tabs .tabbar {
+  margin-top: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.pm-tabs .tablewrap {
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+}
+
+.pm-tabs .grid-table th { background: var(--bg); }
+
+/* priority blocks */
+
+.pm-block {
+  padding: 18px 4px 4px;
+  border-top: 1px solid var(--line);
+  margin-top: 14px;
+}
+
+.pm-block-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.pm-block-h h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.pri-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pri {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 42px;
+  padding: 0 13px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  text-align: left;
+  transition: border-color 0.14s ease, box-shadow 0.14s ease, background 0.14s ease;
+}
+
+.pri:hover { border-color: var(--line-strong); }
+
+.pri.is-on {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+  background: var(--accent-soft);
+}
+
+.pri-flag {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 5px;
+  white-space: nowrap;
+  background: #eef0f1;
+  color: var(--ink-2);
+}
+
+.pri.critical .pri-flag { background: var(--down-bg); color: var(--down); }
+.pri.high .pri-flag { background: var(--warn-bg); color: var(--warn); }
+
+.pri-t {
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  font-weight: 450;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pri-t.dim { color: var(--ink-3); font-size: 11.75px; }
+
+.pri-age {
+  font-size: 11px;
+  color: var(--ink-4);
+  white-space: nowrap;
+}
+
+.pri-tick {
+  font-size: 12.5px;
+  font-weight: 600;
+  min-width: 42px;
+}
+
+.pri-pill {
+  font-size: 11.25px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: var(--up-bg);
+  color: var(--up);
+  white-space: nowrap;
+}
+
+.pri-up {
+  font-size: 12px;
+  font-weight: 550;
+  white-space: nowrap;
+}
+
+/* ---------------- the copilot as a thread panel ---------------- */
+
+.ai-quick {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 8px 10px;
+  border-bottom: 1px solid var(--line-2);
+}
+
+.ai-quick button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 9px;
+  font-size: 12.5px;
+  color: var(--ink-1);
+  transition: background 0.14s ease;
+}
+
+.ai-quick button:hover { background: var(--panel-2); }
+.ai-quick button svg { color: var(--ink-3); }
+
+.ai-tag {
+  padding: 11px 12px;
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  background: var(--accent-soft);
+  animation: reveal 0.16s ease;
+}
+
+.ai-tag-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ai-tag-k {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.ai-tag-t {
+  font-size: 12.75px;
+  font-weight: 600;
+  margin-top: 3px;
+  line-height: 1.4;
+}
+
+.ai-tag-s {
+  font-size: 11px;
+  color: var(--ink-2);
+  margin-top: 2px;
+}
+
+.ai-action {
+  margin-top: 11px;
+  padding: 10px 11px;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.ai-action-t {
+  margin: 6px 0 0;
+  font-size: 12.25px;
+  font-weight: 550;
+  line-height: 1.45;
+}
+
+.ai-action-d {
+  margin: 4px 0 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+.ai-action-b {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.ai-action-b .btn-dark { height: 28px; font-size: 11.75px; padding: 0 12px; }
+.ai-action-b .btn-quiet { height: 28px; font-size: 11.75px; }
+
+.ai-idle {
+  padding: 22px 4px;
+  text-align: center;
+}
+
+.ai-idle p {
+  margin: 0;
+  font-size: 11.75px;
+  line-height: 1.55;
+  color: var(--ink-4);
+}
+
+.ai-sugg {
+  flex: 0 0 auto;
+  padding: 10px 12px 4px;
+  border-top: 1px solid var(--line-2);
+}
+
+.ai-sugg ul {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.ai-sugg button {
+  width: 100%;
+  text-align: left;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-2);
+  font-size: 12px;
+  color: var(--ink-2);
+  transition: background 0.14s ease, border-color 0.14s ease, color 0.14s ease;
+}
+
+.ai-sugg button:hover {
+  background: #fff;
+  border-color: var(--line-strong);
+  color: var(--ink-1);
+}
+
+.ai-plus {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  color: var(--ink-3);
+  flex: 0 0 auto;
+}
+
+.ai-plus:hover { background: var(--panel-2); color: var(--ink-1); }
+
+.ai-compose { padding-left: 5px; }
+
+.ai-send:disabled { opacity: 0.3; cursor: default; }
+.ai-send:not(:disabled):hover { background: var(--accent-hover); }
+

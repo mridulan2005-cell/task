@@ -1,5 +1,15 @@
 export type TaskState = 'working' | 'ready' | 'read';
 
+/* What the PM has tagged for the copilot by picking a card. */
+export type AiContext = {
+  id: string;
+  kind: 'need' | 'signal';
+  title: string;
+  sub: string;
+  questions: string[];
+  action?: { text: string; detail: string };
+};
+
 export type AiTask = {
   id: string;
   quote: string;
