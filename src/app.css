@@ -5,7 +5,6 @@
 .shell {
   display: flex;
   height: 100%;
-  gap: 0;
   padding: 10px;
   gap: 10px;
 }
@@ -1858,8 +1857,9 @@ button.block-h:hover {
 /* ---------------- ai panel ---------------- */
 
 .ai {
-  width: 328px;
-  flex: 0 0 328px;
+  width: 330px;
+  flex: 0 0 330px;
+  height: 100%;
   display: flex;
   flex-direction: column;
   background: var(--panel);
@@ -4516,31 +4516,6 @@ button.crumb:hover {
 
 /* watchlist as a rail flyout */
 
-.flyout {
-  position: fixed;
-  top: 10px;
-  bottom: 10px;
-  left: 234px;
-  z-index: 45;
-  width: 328px;
-  display: flex;
-  animation: flyin 0.18s ease;
-}
-
-.nav-collapsed .flyout { left: 80px; }
-
-.flyout .watchlist {
-  flex: 1;
-  min-height: 0;
-  box-shadow: var(--shadow-pop);
-}
-
-.watch-tools { display: flex; gap: 2px; }
-
-@keyframes flyin {
-  from { opacity: 0; transform: translateX(-8px); }
-  to { opacity: 1; transform: none; }
-}
 
 
 /* the signal tables live in a narrow column, so the columns are pinned */
@@ -5359,4 +5334,323 @@ i.ok {
   .rsim { grid-column: auto; }
   .rstats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+
+/* ============================================================
+   Three fixed panels: navigation and lists, work, copilot
+   ============================================================ */
+
+.rail {
+  overflow: hidden;
+}
+
+/* the lists that live under the navigation */
+
+.rail-list {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--line-2);
+  padding-top: 10px;
+  margin-top: 2px;
+}
+
+.rail-list-h {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  padding: 0 9px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  transition: background 0.14s ease, color 0.14s ease;
+}
+
+.rail-list-h:hover {
+  background: var(--panel-2);
+  color: var(--ink-1);
+}
+
+.rail-list-h svg:first-child { color: var(--ink-4); }
+
+.rail-list-h em {
+  margin-left: auto;
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ink-4);
+}
+
+.rail-list-h svg:last-child {
+  color: var(--ink-4);
+  transition: transform 0.16s ease;
+}
+
+.rail-list-h svg.is-shut { transform: rotate(-90deg); }
+
+.rail-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  margin: 8px 2px 6px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-2);
+  color: var(--ink-4);
+}
+
+.rail-search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: none;
+  font-size: 11.5px;
+}
+
+.rail-search input::placeholder { color: var(--ink-4); }
+
+.rail-watch {
+  list-style: none;
+  margin: 0;
+  padding: 0 2px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.rail-watch li {
+  display: grid;
+  grid-template-columns: auto 40px minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  padding: 6px 5px;
+  border-radius: 7px;
+}
+
+.rail-watch li:hover { background: var(--panel-2); }
+
+.rw-t {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.rw-p {
+  font-size: 11px;
+  text-align: right;
+  color: var(--ink-2);
+}
+
+.rw-c {
+  grid-column: 3;
+  font-size: 10px;
+  text-align: right;
+  margin-top: -3px;
+}
+
+.rw-empty {
+  display: block;
+  padding: 14px 0;
+  text-align: center;
+  font-size: 11px;
+  color: var(--ink-4);
+}
+
+.rail-block { margin-top: 0; }
+
+/* the copilot sits still */
+
+.ai-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.ai-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--line-strong);
+  transition: background 0.2s ease;
+}
+
+.ai-dot.n-working {
+  background: var(--ink-4);
+  animation: breathe 1.8s ease-in-out infinite;
+}
+
+.ai-dot.n-ready {
+  background: #34c47c;
+  animation: halo 2.6s ease-out infinite;
+}
+
+/* the middle panel carries the work, and adapts to its own width */
+
+.risk-row {
+  grid-template-columns: repeat(auto-fit, minmax(268px, 1fr));
+}
+
+.canvas {
+  grid-template-columns: minmax(0, 1fr) minmax(292px, 352px);
+}
+
+@media (max-width: 1560px) {
+  .canvas { grid-template-columns: minmax(0, 1fr) minmax(280px, 320px); }
+  .analyst { font-size: 12.5px; }
+}
+
+
+/* signals and proposals read as rows, not tables, in the narrow column */
+
+.sig-list,
+.prop-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+}
+
+.sig-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 9px 0;
+  border-top: 1px solid var(--line-2);
+}
+
+.sig-list li:first-child { border-top: none; padding-top: 2px; }
+
+.sig-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.sig-top .tick {
+  font-size: 12.25px;
+  font-weight: 600;
+  min-width: 38px;
+}
+
+.sig-pill {
+  flex: 0 1 auto;
+  min-width: 0;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: var(--up-bg);
+  color: var(--up);
+  font-size: 11.25px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sig-up {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 550;
+  white-space: nowrap;
+}
+
+.sig-bot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 46px;
+  min-width: 0;
+}
+
+.sig-note {
+  flex: 1;
+  min-width: 0;
+  font-size: 10.75px;
+  color: var(--ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sig-conf {
+  font-size: 10.5px;
+  color: var(--ink-4);
+  white-space: nowrap;
+}
+
+.sig-bot .open-b {
+  height: 22px;
+  padding: 0 9px;
+  font-size: 11px;
+}
+
+.prop-list li {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line-2);
+}
+
+.prop-list li:first-child { border-top: none; padding-top: 2px; }
+
+.prop-c { min-width: 0; display: flex; flex-direction: column; }
+
+.prop-p {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.prop-a {
+  font-size: 10.5px;
+  color: var(--ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/* the risk cards now sit in a narrower middle panel */
+
+.rmetric-l {
+  white-space: normal;
+  line-height: 1.25;
+  letter-spacing: 0.04em;
+  font-size: 9.5px;
+}
+
+.rmetric { padding: 8px 10px; }
+.rmetric-v { font-size: 16px; }
+
+.protect-body { gap: 10px; }
+
+.donut svg { width: 116px; height: 116px; }
+.donut { width: 116px; height: 116px; }
+
+.donut-mid strong { font-size: 15px; }
+
+.protect-key li { font-size: 10.75px; gap: 6px; }
+.pk-v em { font-size: 10px; }
+
+.exposures li { grid-template-columns: 84px minmax(0, 1fr) 30px 28px; gap: 8px; }
+.exp-n { font-size: 11px; }
+
+.attn-facts { gap: 8px; padding: 8px 9px; }
+.attn-facts dd { font-size: 11.75px; }
+
+.ract-list li { grid-template-columns: 34px 20px minmax(0, 1fr) auto; gap: 7px; }
+
+.reval-steps { gap: 5px 10px; font-size: 10.75px; }
+.reval-steps li + li::before { width: 8px; margin-right: 5px; }
+
+.sim-top { gap: 10px; }
+.sim-key li { font-size: 10.5px; }
 

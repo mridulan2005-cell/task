@@ -14,7 +14,7 @@ const dollars = (v: number) => `$${v.toFixed(2)}`;
 const dollarsAxis = (v: number) => `$${v.toFixed(0)}`;
 
 export default function ModelTestbox({ onGraph }: { onGraph: (name: string | null) => void }) {
-  const cols = useColumns({ min: 208, max: 380, start: 244 }, { min: 300, max: 520, start: 384 });
+  const cols = useColumns({ min: 190, max: 340, start: 216 }, { min: 260, max: 440, start: 310 });
 
   const [on, setOn] = useState<string[]>(MODELS.map((m) => m.id));
   const [state, setState] = useState<Record<string, State>>(() => {

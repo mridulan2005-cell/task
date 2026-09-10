@@ -17,33 +17,22 @@ export function SignalsCard() {
         </button>
       </header>
 
-      <table className="lite-table">
-        <thead>
-          <tr>
-            <th>Ticker</th>
-            <th>Signal</th>
-            <th className="n">Confidence</th>
-            <th className="n">Est. Upside</th>
-            <th />
-          </tr>
-        </thead>
-        <tbody>
-          {SIGNALS.map((s) => (
-            <tr key={s.ticker}>
-              <td className="tick">{s.ticker}</td>
-              <td>
-                <span className="sig-pill">{s.signal}</span>
-                <span className="sig-note">{s.note}</span>
-              </td>
-              <td className="n">{s.confidence}%</td>
-              <td className="n up">+{s.upside.toFixed(1)}%</td>
-              <td className="n">
-                <button className="open-b">Open</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <ul className="sig-list">
+        {SIGNALS.map((s) => (
+          <li key={s.ticker}>
+            <div className="sig-top">
+              <span className="tick">{s.ticker}</span>
+              <span className="sig-pill">{s.signal}</span>
+              <span className="sig-up up">+{s.upside.toFixed(1)}%</span>
+            </div>
+            <div className="sig-bot">
+              <span className="sig-note">{s.note}</span>
+              <span className="sig-conf">{s.confidence}% confidence</span>
+              <button className="open-b">Open</button>
+            </div>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
@@ -59,28 +48,18 @@ export function ProposalsCard() {
         </button>
       </header>
 
-      <table className="lite-table">
-        <thead>
-          <tr>
-            <th>Security</th>
-            <th>AI Proposal</th>
-            <th>PM Adjusted</th>
-            <th className="n">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {PROPOSALS.map((p) => (
-            <tr key={p.ticker}>
-              <td className="tick">{p.ticker}</td>
-              <td>{p.proposal}</td>
-              <td>{p.adjusted}</td>
-              <td className="n">
-                <span className={`prop-state s-${p.state}`}>{p.status}</span>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <ul className="prop-list">
+        {PROPOSALS.map((p) => (
+          <li key={p.ticker}>
+            <span className="tick">{p.ticker}</span>
+            <span className="prop-c">
+              <span className="prop-p">{p.proposal}</span>
+              <span className="prop-a">PM adjusted to {p.adjusted}</span>
+            </span>
+            <span className={`prop-state s-${p.state}`}>{p.status}</span>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

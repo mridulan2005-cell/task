@@ -41,7 +41,7 @@ const GLYPH: Record<SrcKind, (p: { size?: number }) => ReactElement> = {
 };
 
 export default function AnalystWorkspace({ onOpenTestbox }: { onOpenTestbox: () => void }) {
-  const cols = useColumns({ min: 250, max: 430, start: 320 }, { min: 300, max: 470, start: 372 });
+  const cols = useColumns({ min: 210, max: 400, start: 258 }, { min: 250, max: 420, start: 296 });
   const [selected, setSelected] = useState('i-vrt');
   const [kept, setKept] = useState<string[]>([]);
   const [dismissed, setDismissed] = useState<string[]>([]);

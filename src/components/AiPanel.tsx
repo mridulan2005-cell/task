@@ -1,29 +1,44 @@
 import { useState } from 'react';
-import { Chevron, Clip, Send, Spark, X } from './Icons';
+import { Chevron, Clip, Send, Spark } from './Icons';
+import type { Role } from './TopBar';
 import type { AiTask } from '../data/ai';
 
-type Props = { tasks: AiTask[]; onClose: () => void };
+type Props = { tasks: AiTask[]; nudge: string; role: Role };
 
-const FOLLOWUPS = [
-  'Why did semis go over the cap?',
-  'Show me the drafted TSM and ASML trim',
-  'What changed in the UNH thesis today?',
-];
+const BRIEF: Record<Role, { title: string; lead: string; body: string; asks: string[] }> = {
+  pm: {
+    title: 'Fund copilot',
+    lead: 'Your morning report is ready, as usual.',
+    body: 'Two items cleared overnight. Semis breached the sector cap at 14:32 and Risk has a trim waiting on you. The PLTR order is still held by Compliance.',
+    asks: ['Why did semis go over the cap?', 'Show me the drafted TSM and ASML trim', 'What changed in the UNH thesis today?'],
+  },
+  analyst: {
+    title: 'Research copilot',
+    lead: 'Three ideas moved while you were away.',
+    body: 'The screener added Vertiv this morning and the backlog conflict is still open. Two models finished overnight and one is waiting on a stale feed.',
+    asks: ['Reconcile the two backlog filings', 'Which ideas have no model yet?', 'Summarise what the screener found'],
+  },
+  risk: {
+    title: 'Risk copilot',
+    lead: 'The book is inside policy.',
+    body: 'Two exceptions need you: the PLTR restricted-list override and the technology sector limit request. Everything else cleared without a human.',
+    asks: ['What would a 28% tech limit do to VaR?', 'Show every rule PLTR trips', 'Which limits came closest today?'],
+  },
+};
 
-export default function AiPanel({ tasks, onClose }: Props) {
+export default function AiPanel({ tasks, nudge, role }: Props) {
+  const brief = BRIEF[role];
   return (
     <aside className="ai" data-ask-exempt>
       <header className="ai-head">
         <span className="ai-title">
           <Spark />
-          Fund copilot
+          {brief.title}
+          <i className={`ai-dot n-${nudge}`} title={nudge === 'working' ? 'Working' : nudge === 'ready' ? 'An answer is ready' : 'Idle'} />
         </span>
         <div className="ai-head-tools">
           <button className="icon-btn" title="Attach">
             <Clip />
-          </button>
-          <button className="icon-btn" onClick={onClose} title="Close panel">
-            <X />
           </button>
         </div>
       </header>
@@ -32,11 +47,8 @@ export default function AiPanel({ tasks, onClose }: Props) {
         <div className="ai-stamp">Today, 08:02</div>
 
         <div className="ai-msg">
-          <p>Your morning report is ready, as usual.</p>
-          <p className="ai-dim">
-            Two items cleared overnight. Semis breached the sector cap at 14:32 and Risk has a trim waiting on you. The
-            PLTR order is still held by Compliance.
-          </p>
+          <p>{brief.lead}</p>
+          <p className="ai-dim">{brief.body}</p>
           <div className="ai-sources">
             <span className="chip">46 sources</span>
             <span className="chip">6 agents</span>
@@ -50,7 +62,7 @@ export default function AiPanel({ tasks, onClose }: Props) {
 
         {tasks.length === 0 && (
           <div className="ai-followups">
-            {FOLLOWUPS.map((f) => (
+            {brief.asks.map((f) => (
               <button key={f} className="ai-follow">
                 {f}
               </button>

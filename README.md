@@ -16,17 +16,27 @@ The app opens on `http://localhost:5177`. Two deep links skip the role switch:
 - `#analyst` opens the analyst workspace
 - `#testbox` opens the model testbox
 
-Roles can also be switched from the user chip in the top right.
+The third is `#risk`. Roles can also be switched from the user chip in the top right.
+
+## Layout
+
+Every role uses the same three panels. On the left, navigation over the lists
+that role keeps at hand. In the middle, the work. On the right, the copilot,
+which is always present rather than something to open.
 
 ## Surfaces
 
 **Portfolio manager.** A row of metric tiles that can be swapped or extended,
 a performance chart comparing the book against benchmarks, positions,
-transactions and limit monitors, asset allocation, the attention queue, and a
-watchlist.
+transactions and limit monitors, asset allocation, the attention queue, top
+investment signals and the proposals waiting on a decision.
 
-**Analyst.** Research backup and idea generation share one surface. The right
-column carries running models and the analyst's own attention queue.
+**Analyst.** Research backup and idea generation share one surface, beside
+running models, saved templates and the analyst's own attention queue.
+
+**Risk analyst.** Coverage counts across the top, then the exceptions the agent
+cannot clear alone, current risk against its limits, what was prevented today,
+recent agent activity, a worked evaluation and the continuous simulation.
 
 **Model testbox.** Reached from the analyst workspace. Selected models stack on
 the bench, each with its own range switcher, price chart and parameter sliders.

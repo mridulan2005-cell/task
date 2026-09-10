@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Bell, Check, Chevron, Lock, Plus, Search, Spark, X } from './Icons';
+import { Bell, Check, Chevron, Lock, Plus, Search, X } from './Icons';
 
 export type Role = 'pm' | 'analyst' | 'risk';
 
@@ -15,9 +15,6 @@ type Props = {
   onTab: (id: string) => void;
   onCloseTab: (id: string) => void;
   onNewTab: () => void;
-  aiOpen: boolean;
-  onToggleAi: () => void;
-  nudge: string;
   role: Role;
   onRole: (r: Role) => void;
   crumb?: string;
@@ -25,7 +22,7 @@ type Props = {
   onCrumbHome?: () => void;
 };
 
-export default function TopBar({ tabs, activeTab, onTab, onCloseTab, onNewTab, aiOpen, onToggleAi, nudge, role, onRole, crumb, crumbLast, onCrumbHome }: Props) {
+export default function TopBar({ tabs, activeTab, onTab, onCloseTab, onNewTab, role, onRole, crumb, crumbLast, onCrumbHome }: Props) {
   const [menu, setMenu] = useState(false);
   const wrap = useRef<HTMLDivElement>(null);
 
@@ -97,11 +94,6 @@ export default function TopBar({ tabs, activeTab, onTab, onCloseTab, onNewTab, a
 
         <button className="icon-btn has-dot" title="Notifications">
           <Bell />
-        </button>
-
-        <button className={`ask ${aiOpen ? 'is-on' : ''} n-${nudge}`} onClick={onToggleAi}>
-          <Spark />
-          Ask AI
         </button>
 
         <div className="user-wrap" ref={wrap}>
