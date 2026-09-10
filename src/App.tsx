@@ -6,6 +6,7 @@ import MetricStrip from './components/MetricStrip';
 import AllocationCard from './components/AllocationCard';
 import NeedsYou from './components/NeedsYou';
 import Watchlist from './components/Watchlist';
+import { ProposalsCard, SignalsCard } from './components/SignalsCard';
 import AiPanel from './components/AiPanel';
 import AnalystWorkspace from './components/AnalystWorkspace';
 import ModelTestbox from './components/ModelTestbox';
@@ -102,7 +103,18 @@ export default function App() {
 
   return (
     <div className={`shell role-${role} ${collapsed ? 'nav-collapsed' : ''} ${aiOpen ? 'ai-open' : ''}`}>
-      <Sidebar collapsed={collapsed} onToggle={toggleRail} active={nav} onNavigate={setNav} />
+      <Sidebar
+        collapsed={collapsed}
+        onToggle={toggleRail}
+        active={nav}
+        onNavigate={(key) => setNav(key === nav && key === 'watchlist' ? 'dashboard' : key)}
+      />
+
+      {nav === 'watchlist' && (
+        <div className="flyout">
+          <Watchlist onClose={() => setNav('dashboard')} />
+        </div>
+      )}
 
       <div className="frame">
         <TopBar
@@ -134,7 +146,8 @@ export default function App() {
               </div>
               <div className="col col-side">
                 <NeedsYou />
-                <Watchlist />
+                <SignalsCard />
+                <ProposalsCard />
               </div>
             </main>
           ) : view === 'testbox' ? (

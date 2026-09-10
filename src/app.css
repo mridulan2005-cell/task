@@ -4083,57 +4083,13 @@ button.crumb:hover {
 
 .wire.is-dim { opacity: 0.35; }
 
-.gnode {
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 1px;
-  padding: 0 11px;
-  border: 1px solid var(--line-strong);
-  border-radius: 10px;
-  background: #fff;
-  text-align: left;
-  box-shadow: 0 1px 2px rgba(17, 18, 19, 0.05);
-  transition: border-color 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
-}
 
-.gnode:hover { border-color: var(--ink-3); }
 
-.gnode.is-on {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent);
-}
 
-.gnode.is-dim { opacity: 0.42; }
 
-.gnode-k {
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--ink-4);
-}
 
-.k-source .gnode-k { color: #3b5bbd; }
-.k-assumption .gnode-k { color: var(--warn); }
-.k-output .gnode-k { color: var(--up); }
 
-.gnode-l {
-  font-size: 12.25px;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 
-.gnode-d {
-  font-size: 10.5px;
-  color: var(--ink-3);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 
 /* sources terminal */
 
@@ -4267,5 +4223,369 @@ button.crumb:hover {
 
 @media (max-width: 1240px) {
   .graphview { grid-template-columns: minmax(0, 1fr) minmax(260px, 300px); }
+}
+
+
+/* ---------------- typed nodes ---------------- */
+
+.gnode {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: #fff;
+  overflow: visible;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(17, 18, 19, 0.06);
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+}
+
+.gnode:hover { border-color: var(--ink-4); }
+
+.gnode.is-on {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 2px 8px rgba(29, 125, 224, 0.16);
+}
+
+.gnode.is-dim { opacity: 0.4; }
+
+.gnode-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 30px;
+  padding: 0 8px;
+  border-radius: 9px 9px 0 0;
+  border-bottom: 1px solid var(--line-2);
+}
+
+.gnode-ic {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.gnode-l {
+  flex: 1;
+  min-width: 0;
+  font-size: 11.75px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gnode-acts {
+  display: flex;
+  gap: 1px;
+  opacity: 0;
+  transition: opacity 0.14s ease;
+}
+
+.gnode:hover .gnode-acts { opacity: 1; }
+
+.gnode-acts button {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  color: currentColor;
+  opacity: 0.6;
+}
+
+.gnode-acts button:hover {
+  background: rgba(255, 255, 255, 0.7);
+  opacity: 1;
+}
+
+/* header tints, one per node type */
+.k-source .gnode-head { background: #e4ecfb; color: #2f4fa8; }
+.k-input .gnode-head { background: #fdf0dc; color: #96670f; }
+.k-formula .gnode-head { background: #ece7fb; color: #5f45b5; }
+.k-ai .gnode-head { background: var(--accent-soft); color: var(--accent); }
+.k-output .gnode-head { background: #e3f3ea; color: #12805c; }
+
+.gnode-body {
+  flex: 1;
+  padding: 8px 0;
+}
+
+.gnode-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.port-side {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 52%;
+}
+
+.port-side.is-out { justify-content: flex-end; }
+
+.port {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px solid var(--ink-4);
+  flex: 0 0 auto;
+}
+
+.is-in .port { left: -5px; }
+.is-out .port { right: -5px; }
+
+.k-source .is-out .port { border-color: #2f4fa8; }
+.k-input .is-out .port { border-color: #96670f; }
+.k-formula .is-out .port { border-color: #5f45b5; }
+.k-ai .is-out .port { border-color: var(--accent); }
+.k-output .is-out .port { border-color: #12805c; }
+
+.port-t {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 10.75px;
+  color: var(--ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.is-in .port-t { padding-left: 10px; flex-direction: column; align-items: flex-start; gap: 2px; }
+.is-out .port-t { padding-right: 10px; }
+
+.port-f {
+  display: block;
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-1);
+  padding: 2px 7px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--panel-2);
+}
+
+.gnode-kind {
+  position: absolute;
+  left: 9px;
+  bottom: -8px;
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+  background: #fff;
+  padding: 0 4px;
+  border-radius: 3px;
+  opacity: 0;
+  transition: opacity 0.14s ease;
+}
+
+.gnode:hover .gnode-kind,
+.gnode.is-on .gnode-kind { opacity: 1; }
+
+/* ---------------- dashboard signal cards ---------------- */
+
+.card-title.with-mark {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.ai-mark {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.view-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.75px;
+  color: var(--accent);
+  transition: opacity 0.14s ease;
+}
+
+.view-all:hover { opacity: 0.75; }
+
+.lite-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+.lite-table th {
+  text-align: left;
+  font-size: 10.5px;
+  font-weight: 450;
+  color: var(--ink-3);
+  padding: 0 8px 8px;
+  white-space: nowrap;
+}
+
+.lite-table th.n,
+.lite-table td.n { text-align: right; }
+
+.lite-table td {
+  padding: 9px 8px;
+  border-top: 1px solid var(--line-2);
+  font-size: 12px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.lite-table th:first-child,
+.lite-table td:first-child { padding-left: 2px; }
+
+.lite-table th:last-child,
+.lite-table td:last-child { padding-right: 2px; }
+
+.lite-table .tick {
+  font-size: 12.25px;
+  font-weight: 600;
+}
+
+.sig-pill {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: var(--up-bg);
+  color: var(--up);
+  font-size: 11.25px;
+  font-weight: 500;
+}
+
+.sig-note {
+  display: block;
+  margin-top: 3px;
+  font-size: 10.75px;
+  color: var(--ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 210px;
+}
+
+.open-b {
+  height: 24px;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fff;
+  font-size: 11.5px;
+  color: var(--ink-2);
+  transition: border-color 0.14s ease, color 0.14s ease;
+}
+
+.open-b:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.prop-state {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 450;
+}
+
+.s-review { background: var(--accent-soft); color: var(--accent); }
+.s-pending { background: var(--warn-bg); color: var(--warn); }
+.s-blocked { background: var(--down-bg); color: var(--down); }
+
+/* watchlist as a rail flyout */
+
+.flyout {
+  position: fixed;
+  top: 10px;
+  bottom: 10px;
+  left: 234px;
+  z-index: 45;
+  width: 328px;
+  display: flex;
+  animation: flyin 0.18s ease;
+}
+
+.nav-collapsed .flyout { left: 80px; }
+
+.flyout .watchlist {
+  flex: 1;
+  min-height: 0;
+  box-shadow: var(--shadow-pop);
+}
+
+.watch-tools { display: flex; gap: 2px; }
+
+@keyframes flyin {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: none; }
+}
+
+
+/* the signal tables live in a narrow column, so the columns are pinned */
+.signals .lite-table,
+.proposals .lite-table {
+  table-layout: fixed;
+}
+
+.signals .lite-table th,
+.signals .lite-table td {
+  padding: 8px 6px;
+}
+
+.signals .lite-table th:nth-child(1) { width: 46px; }
+.signals .lite-table th:nth-child(3) { width: 62px; }
+.signals .lite-table th:nth-child(4) { width: 58px; }
+.signals .lite-table th:nth-child(5) { width: 54px; }
+
+.signals .lite-table td:nth-child(2) {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.sig-pill {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sig-note { max-width: 100%; }
+
+.proposals .lite-table th:nth-child(1) { width: 56px; }
+.proposals .lite-table th:nth-child(2) { width: 74px; }
+.proposals .lite-table th:nth-child(3) { width: 78px; }
+
+.proposals .lite-table th,
+.proposals .lite-table td {
+  padding: 8px 6px;
+}
+
+.prop-state {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 

@@ -1,4 +1,4 @@
-import { Agents, Book, Bookmark, Exit, Gear, Grid, Mark, Panel, Plus } from './Icons';
+import { Agents, Book, Bookmark, Exit, Eye, Gear, Grid, Mark, Panel, Plus } from './Icons';
 
 type Props = {
   collapsed: boolean;
@@ -9,6 +9,7 @@ type Props = {
 
 const NAV = [
   { key: 'dashboard', label: 'Dashboard', icon: Grid },
+  { key: 'watchlist', label: 'Watchlist', icon: Eye, badge: '7' },
   { key: 'saved', label: 'Saved', icon: Bookmark },
   { key: 'agents', label: 'Agents', icon: Agents, badge: '6' },
   { key: 'research', label: 'Research', icon: Book },

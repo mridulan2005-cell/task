@@ -275,20 +275,6 @@ function IdeaGen({
 
 function ModelsPanel({ ideaId, ticker, onApply }: { ideaId?: string; ticker?: string; onApply: () => void }) {
   const [listOpen, setListOpen] = useState(false);
-  const [templates, setTemplates] = useState(false);
-
-  return (
-    <section className="card panel models-panel">
-      {templates ? (
-        <Templates ideaId={ideaId} ticker={ticker} onApply={onApply} onBack={() => setTemplates(false)} />
-      ) : (
-        <Models open={listOpen} onToggle={() => setListOpen(!listOpen)} onCreate={() => setTemplates(true)} />
-      )}
-    </section>
-  );
-}
-
-function Models({ open, onToggle, onCreate }: { open: boolean; onToggle: () => void; onCreate: () => void }) {
   const [tick, setTick] = useState(0);
 
   /* The bars creep so the panel reads as live without asking for attention. */
@@ -298,14 +284,14 @@ function Models({ open, onToggle, onCreate }: { open: boolean; onToggle: () => v
   }, []);
 
   return (
-    <>
-      <button className={`models-stat ${open ? 'is-open' : ''}`} onClick={onToggle} aria-expanded={open}>
+    <section className="card panel models-panel">
+      <button className={`models-stat ${listOpen ? 'is-open' : ''}`} onClick={() => setListOpen(!listOpen)} aria-expanded={listOpen}>
         <span className="models-spin" />
         <span className="models-count">{MODELS.length} models running</span>
-        <Chevron size={13} className={open ? '' : 'is-shut'} />
+        <Chevron size={13} className={listOpen ? '' : 'is-shut'} />
       </button>
 
-      {open && (
+      {listOpen && (
         <ul className="models-list">
           {MODELS.map((m, i) => {
             const pct = Math.min(99, m.pct + ((tick * (i + 2)) % 7));
@@ -328,16 +314,12 @@ function Models({ open, onToggle, onCreate }: { open: boolean; onToggle: () => v
         </ul>
       )}
 
-      <div className="models-foot">
-        <button className="btn-dark wide" onClick={onCreate}>
-          Create model
-        </button>
-      </div>
-    </>
+      <Templates ideaId={ideaId} ticker={ticker} onApply={onApply} />
+    </section>
   );
 }
 
-function Templates({ ideaId, ticker, onApply, onBack }: { ideaId?: string; ticker?: string; onApply: () => void; onBack: () => void }) {
+function Templates({ ideaId, ticker, onApply }: { ideaId?: string; ticker?: string; onApply: () => void }) {
   const [picked, setPicked] = useState<string[]>([]);
   const [tip, setTip] = useState<string | null>(null);
   const [brief, setBrief] = useState('');
@@ -354,11 +336,8 @@ function Templates({ ideaId, ticker, onApply, onBack }: { ideaId?: string; ticke
   return (
     <>
       <header className="tpl-head">
-        <button className="icon-btn" onClick={onBack} aria-label="Back to running models">
-          <Left size={15} />
-        </button>
-        <span className="tpl-title">Saved templates</span>
-        <span className="tpl-count">{TEMPLATES.length}</span>
+        <span className="tpl-title">Templates</span>
+        <span className="tpl-count">{TEMPLATES.length} saved</span>
       </header>
 
       <ul className="tpl-list">

@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { WATCHLIST } from '../data/fund';
 import Sparkline from './Sparkline';
-import { Plus, Search } from './Icons';
+import { Plus, Search, X } from './Icons';
 
-export default function Watchlist() {
+export default function Watchlist({ onClose }: { onClose?: () => void }) {
   const [q, setQ] = useState('');
   const rows = WATCHLIST.filter(
     (w) => w.ticker.toLowerCase().includes(q.toLowerCase()) || w.name.toLowerCase().includes(q.toLowerCase()),
@@ -16,9 +16,16 @@ export default function Watchlist() {
           <div className="card-title">Watchlist</div>
           <div className="card-sub">{WATCHLIST.length} names tracked by Research</div>
         </div>
-        <button className="icon-btn" title="Add a name">
-          <Plus size={15} />
-        </button>
+        <div className="watch-tools">
+          <button className="icon-btn" title="Add a name">
+            <Plus size={15} />
+          </button>
+          {onClose && (
+            <button className="icon-btn" onClick={onClose} title="Close the watchlist">
+              <X size={13} />
+            </button>
+          )}
+        </div>
       </header>
 
       <label className="search">

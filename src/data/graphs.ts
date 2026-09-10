@@ -1,50 +1,67 @@
-export type NodeKind = 'source' | 'assumption' | 'transform' | 'output';
+export type NodeKind = 'source' | 'input' | 'formula' | 'ai' | 'output';
+
+export type Port = { label: string; value?: string };
 
 export type GNode = {
   id: string;
   label: string;
-  detail: string;
   kind: NodeKind;
   col: number;
   row: number;
+  ins?: Port[];
+  outs?: string[];
 };
 
-export type GEdge = { from: string; to: string };
+export type GEdge = { from: string; fromPort?: number; to: string; toPort?: number };
 
 export type FeedKind = 'python' | 'sql' | 'excel' | 'csv' | 'api';
 
-export type Feed = {
-  id: string;
-  name: string;
-  kind: FeedKind;
-  note: string;
-  body: string;
-};
+export type Feed = { id: string; name: string; kind: FeedKind; note: string; body: string };
 
 export type ModelGraph = { nodes: GNode[]; edges: GEdge[]; feeds: Feed[] };
+
+export const KIND_LABEL: Record<NodeKind, string> = {
+  source: 'Source',
+  input: 'Input',
+  formula: 'Formula',
+  ai: 'Agent',
+  output: 'Output',
+};
 
 export const GRAPHS: Record<string, ModelGraph> = {
   backlog: {
     nodes: [
-      { id: 'filings', label: 'Utility filings', detail: '16 filers, quarterly', kind: 'source', col: 0, row: 1 },
-      { id: 'orders', label: 'Order book', detail: 'Company disclosure', kind: 'source', col: 0, row: 2 },
-      { id: 'backlog', label: 'Backlog', detail: '$6.9B, disputed', kind: 'assumption', col: 1, row: 0 },
-      { id: 'growth', label: 'Order growth', detail: '11.0% a year', kind: 'assumption', col: 1, row: 1 },
-      { id: 'multiple', label: 'Exit multiple', detail: '18.5x', kind: 'assumption', col: 1, row: 3 },
-      { id: 'bridge', label: 'Revenue bridge', detail: 'Backlog to revenue', kind: 'transform', col: 2, row: 1 },
-      { id: 'entry', label: 'Entry price', detail: 'Multiple on year two', kind: 'transform', col: 2, row: 2 },
-      { id: 'fair', label: 'Fair value', detail: 'Gap to the tape', kind: 'output', col: 3, row: 2 },
+      { id: 'filings', label: 'Utility filings', kind: 'source', col: 0, row: 0, outs: ['Load revisions', 'Corridors'] },
+      { id: 'orders', label: 'Order book', kind: 'source', col: 0, row: 1, outs: ['Backlog', 'Bookings'] },
+      {
+        id: 'assume',
+        label: 'Assumptions',
+        kind: 'input',
+        col: 1,
+        row: 0,
+        ins: [
+          { label: 'Backlog', value: '6.9' },
+          { label: 'Growth', value: '11.0' },
+          { label: 'Multiple', value: '18.5' },
+        ],
+        outs: ['Set'],
+      },
+      { id: 'reconcile', label: 'Reconcile filings', kind: 'ai', col: 1, row: 1, ins: [{ label: 'Sources' }], outs: ['Agreed', 'Conflicts'] },
+      { id: 'bridge', label: 'Revenue bridge', kind: 'formula', col: 2, row: 0, ins: [{ label: 'Backlog' }, { label: 'Growth' }], outs: ['Revenue'] },
+      { id: 'entry', label: 'Entry price', kind: 'formula', col: 2, row: 1, ins: [{ label: 'Revenue' }, { label: 'Multiple' }], outs: ['Price'] },
+      { id: 'fair', label: 'Fair value', kind: 'output', col: 3, row: 0, ins: [{ label: 'Price' }, { label: 'Conflicts' }], outs: ['Gap to tape'] },
     ],
     edges: [
-      { from: 'filings', to: 'backlog' },
-      { from: 'filings', to: 'growth' },
-      { from: 'orders', to: 'backlog' },
-      { from: 'orders', to: 'growth' },
-      { from: 'backlog', to: 'bridge' },
-      { from: 'growth', to: 'bridge' },
-      { from: 'bridge', to: 'entry' },
-      { from: 'multiple', to: 'entry' },
-      { from: 'entry', to: 'fair' },
+      { from: 'filings', fromPort: 0, to: 'assume', toPort: 0 },
+      { from: 'filings', fromPort: 1, to: 'reconcile', toPort: 0 },
+      { from: 'orders', fromPort: 0, to: 'assume', toPort: 0 },
+      { from: 'orders', fromPort: 1, to: 'assume', toPort: 1 },
+      { from: 'assume', fromPort: 0, to: 'bridge', toPort: 0 },
+      { from: 'assume', fromPort: 0, to: 'bridge', toPort: 1 },
+      { from: 'assume', fromPort: 0, to: 'entry', toPort: 1 },
+      { from: 'bridge', fromPort: 0, to: 'entry', toPort: 0 },
+      { from: 'entry', fromPort: 0, to: 'fair', toPort: 0 },
+      { from: 'reconcile', fromPort: 1, to: 'fair', toPort: 1 },
     ],
     feeds: [
       {
@@ -73,23 +90,33 @@ export const GRAPHS: Record<string, ModelGraph> = {
 
   margin: {
     nodes: [
-      { id: 'supplier', label: 'Supplier release', detail: 'Capacity guidance', kind: 'source', col: 0, row: 1 },
-      { id: 'segments', label: 'Segment history', detail: 'Eight quarters', kind: 'source', col: 0, row: 2 },
-      { id: 'mix', label: 'Custom mix', detail: '25% of revenue', kind: 'assumption', col: 1, row: 0 },
-      { id: 'price', label: 'Pricing', detail: '+1.5%', kind: 'assumption', col: 1, row: 2 },
-      { id: 'attrib', label: 'Attribution', detail: 'Capacity to customer', kind: 'transform', col: 1, row: 3 },
-      { id: 'bridge', label: 'Margin bridge', detail: 'Mix to gross margin', kind: 'transform', col: 2, row: 1 },
-      { id: 'gm', label: 'Gross margin', detail: 'Against consensus', kind: 'output', col: 3, row: 1 },
+      { id: 'supplier', label: 'Supplier release', kind: 'source', col: 0, row: 0, outs: ['Capacity', 'Programme'] },
+      { id: 'segments', label: 'Segment history', kind: 'source', col: 0, row: 1, outs: ['Revenue', 'Gross profit'] },
+      { id: 'attrib', label: 'Attribution', kind: 'ai', col: 1, row: 0, ins: [{ label: 'Capacity' }], outs: ['Customer', 'Confidence'] },
+      {
+        id: 'assume',
+        label: 'Assumptions',
+        kind: 'input',
+        col: 1,
+        row: 1,
+        ins: [
+          { label: 'Mix', value: '25' },
+          { label: 'Pricing', value: '1.5' },
+          { label: 'Opex', value: '6.0' },
+        ],
+        outs: ['Set'],
+      },
+      { id: 'bridge', label: 'Margin bridge', kind: 'formula', col: 2, row: 0, ins: [{ label: 'Mix' }, { label: 'Pricing' }, { label: 'Base' }], outs: ['Delta'] },
+      { id: 'gm', label: 'Gross margin', kind: 'output', col: 3, row: 0, ins: [{ label: 'Delta' }], outs: ['Vs consensus'] },
     ],
     edges: [
-      { from: 'supplier', to: 'mix' },
-      { from: 'supplier', to: 'attrib' },
-      { from: 'segments', to: 'price' },
-      { from: 'segments', to: 'bridge' },
-      { from: 'mix', to: 'bridge' },
-      { from: 'price', to: 'bridge' },
-      { from: 'attrib', to: 'bridge' },
-      { from: 'bridge', to: 'gm' },
+      { from: 'supplier', fromPort: 0, to: 'attrib', toPort: 0 },
+      { from: 'supplier', fromPort: 1, to: 'assume', toPort: 0 },
+      { from: 'segments', fromPort: 0, to: 'assume', toPort: 1 },
+      { from: 'segments', fromPort: 1, to: 'bridge', toPort: 2 },
+      { from: 'attrib', fromPort: 0, to: 'bridge', toPort: 0 },
+      { from: 'assume', fromPort: 0, to: 'bridge', toPort: 1 },
+      { from: 'bridge', fromPort: 0, to: 'gm', toPort: 0 },
     ],
     feeds: [
       {
@@ -111,20 +138,31 @@ export const GRAPHS: Record<string, ModelGraph> = {
 
   leadlag: {
     nodes: [
-      { id: 'dealer', label: 'Dealer inventory', detail: 'Weekly, five regions', kind: 'source', col: 0, row: 1 },
-      { id: 'orders', label: 'Regional orders', detail: 'Vendor feed, stale', kind: 'source', col: 0, row: 2 },
-      { id: 'lead', label: 'Lead', detail: '2 quarters', kind: 'assumption', col: 1, row: 0 },
-      { id: 'credit', label: 'Credit weight', detail: '35%', kind: 'assumption', col: 1, row: 2 },
-      { id: 'align', label: 'Cycle alignment', detail: 'Four prior cycles', kind: 'transform', col: 2, row: 1 },
-      { id: 'hit', label: 'Hit rate', detail: 'With exceptions', kind: 'output', col: 3, row: 1 },
+      { id: 'dealer', label: 'Dealer inventory', kind: 'source', col: 0, row: 0, outs: ['Units', 'Regions'] },
+      { id: 'orders', label: 'Regional orders', kind: 'source', col: 0, row: 1, outs: ['Orders'] },
+      {
+        id: 'assume',
+        label: 'Assumptions',
+        kind: 'input',
+        col: 1,
+        row: 0,
+        ins: [
+          { label: 'Lead', value: '2' },
+          { label: 'Credit', value: '35' },
+        ],
+        outs: ['Set'],
+      },
+      { id: 'label', label: 'Cycle labelling', kind: 'ai', col: 1, row: 1, ins: [{ label: 'History' }], outs: ['Cycles'] },
+      { id: 'align', label: 'Cross correlation', kind: 'formula', col: 2, row: 0, ins: [{ label: 'Inventory' }, { label: 'Orders' }, { label: 'Cycles' }], outs: ['Fit'] },
+      { id: 'hit', label: 'Hit rate', kind: 'output', col: 3, row: 0, ins: [{ label: 'Fit' }], outs: ['With exceptions'] },
     ],
     edges: [
-      { from: 'dealer', to: 'lead' },
-      { from: 'dealer', to: 'align' },
-      { from: 'orders', to: 'align' },
-      { from: 'lead', to: 'align' },
-      { from: 'credit', to: 'align' },
-      { from: 'align', to: 'hit' },
+      { from: 'dealer', fromPort: 0, to: 'align', toPort: 0 },
+      { from: 'dealer', fromPort: 1, to: 'label', toPort: 0 },
+      { from: 'orders', fromPort: 0, to: 'align', toPort: 1 },
+      { from: 'assume', fromPort: 0, to: 'align', toPort: 0 },
+      { from: 'label', fromPort: 0, to: 'align', toPort: 2 },
+      { from: 'align', fromPort: 0, to: 'hit', toPort: 0 },
     ],
     feeds: [
       {
@@ -146,20 +184,30 @@ export const GRAPHS: Record<string, ModelGraph> = {
 
   meanrev: {
     nodes: [
-      { id: 'spread', label: 'Refining spread', detail: 'Daily, ten years', kind: 'source', col: 0, row: 1 },
-      { id: 'band', label: 'Historical band', detail: 'Rolling two years', kind: 'transform', col: 1, row: 0 },
-      { id: 'entry', label: 'Entry z', detail: '1.6 sigma', kind: 'assumption', col: 1, row: 1 },
-      { id: 'half', label: 'Half life', detail: '35 days', kind: 'assumption', col: 1, row: 2 },
-      { id: 'sim', label: 'Pair simulation', detail: 'Carry net', kind: 'transform', col: 2, row: 1 },
-      { id: 'ret', label: 'Annualised return', detail: 'Before carry', kind: 'output', col: 3, row: 1 },
+      { id: 'spread', label: 'Refining spread', kind: 'source', col: 0, row: 0, outs: ['Daily', 'Ten years'] },
+      { id: 'band', label: 'Historical band', kind: 'formula', col: 1, row: 0, ins: [{ label: 'Series' }], outs: ['Mean', 'Sigma'] },
+      {
+        id: 'assume',
+        label: 'Assumptions',
+        kind: 'input',
+        col: 1,
+        row: 1,
+        ins: [
+          { label: 'Entry z', value: '1.6' },
+          { label: 'Exit z', value: '0.4' },
+          { label: 'Half life', value: '35' },
+        ],
+        outs: ['Set'],
+      },
+      { id: 'sim', label: 'Pair simulation', kind: 'formula', col: 2, row: 0, ins: [{ label: 'Band' }, { label: 'Rules' }, { label: 'Prices' }], outs: ['Path'] },
+      { id: 'ret', label: 'Annualised return', kind: 'output', col: 3, row: 0, ins: [{ label: 'Path' }], outs: ['Before carry'] },
     ],
     edges: [
-      { from: 'spread', to: 'band' },
-      { from: 'spread', to: 'sim' },
-      { from: 'band', to: 'sim' },
-      { from: 'entry', to: 'sim' },
-      { from: 'half', to: 'sim' },
-      { from: 'sim', to: 'ret' },
+      { from: 'spread', fromPort: 0, to: 'band', toPort: 0 },
+      { from: 'spread', fromPort: 1, to: 'sim', toPort: 2 },
+      { from: 'band', fromPort: 0, to: 'sim', toPort: 0 },
+      { from: 'assume', fromPort: 0, to: 'sim', toPort: 1 },
+      { from: 'sim', fromPort: 0, to: 'ret', toPort: 0 },
     ],
     feeds: [
       {
@@ -189,11 +237,7 @@ export const FEED_TYPES = [
 ];
 
 export const SUGGESTIONS: Record<string, string[]> = {
-  backlog: [
-    'Reconcile the two backlog filings',
-    'Add a conversion lag node',
-    'Swap the exit multiple for a peer median',
-  ],
+  backlog: ['Reconcile the two backlog filings', 'Add a conversion lag node', 'Swap the exit multiple for a peer median'],
   margin: ['Test the attribution against a second customer', 'Add wafer yield as an input', 'Rebuild the bridge on nine quarters'],
   leadlag: ['Repoint the stale order feed', 'Weight the credit cycle up to 60%', 'Add a fifth region'],
   meanrev: ['Net the carry cost into the output', 'Widen the entry band to 2 sigma', 'Add a position cap node'],

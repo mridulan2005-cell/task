@@ -249,3 +249,23 @@ export const Nodes = ({ size = 15, className }: P) => (
     <path d="M8.6 11.4h2.6a1.8 1.8 0 0 0 1.8-1.8V8.2a1.8 1.8 0 0 1 1.8-1.8h0.6M8.6 12.6h2.6a1.8 1.8 0 0 1 1.8 1.8v1.4a1.8 1.8 0 0 0 1.8 1.8h0.6" />
   </svg>
 );
+
+export const Eye = ({ size = 18, className }: P) => (
+  <svg {...base(size, className)}>
+    <path d="M2.4 12s3.6-6.4 9.6-6.4S21.6 12 21.6 12s-3.6 6.4-9.6 6.4S2.4 12 2.4 12z" />
+    <circle cx="12" cy="12" r="2.6" />
+  </svg>
+);
+
+export const Fx = ({ size = 13, className }: P) => (
+  <svg {...base(size, className)}>
+    <path d="M4.5 20V8.2a3.2 3.2 0 0 1 3.2-3.2h1.1M3.4 12h6.6" />
+    <path d="M13.4 12.4l6.2 7M19.6 12.4l-6.2 7" />
+  </svg>
+);
+
+export const Trash = ({ size = 13, className }: P) => (
+  <svg {...base(size, className)}>
+    <path d="M4.6 6.6h14.8M9.4 6.6V4.8h5.2v1.8M6.4 6.6l.9 12.2a1.6 1.6 0 0 0 1.6 1.5h6.2a1.6 1.6 0 0 0 1.6-1.5l.9-12.2" />
+  </svg>
+);
