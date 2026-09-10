@@ -22,17 +22,12 @@ export default function RiskWorkspace() {
     <main className="risk">
       <StatStrip />
 
-      <div className="risk-row">
-        <Attention />
-        <RiskState />
-        <Protection />
-      </div>
-
-      <div className="risk-row">
-        <RecentActivity />
-        <Evaluation />
-        <Simulation />
-      </div>
+      <Attention />
+      <RiskState />
+      <Protection />
+      <RecentActivity />
+      <Evaluation />
+      <Simulation />
     </main>
   );
 }

@@ -5654,3 +5654,74 @@ i.ok {
 .sim-top { gap: 10px; }
 .sim-key li { font-size: 10.5px; }
 
+
+/* ============================================================
+   The middle panel is one column. Everything stacks.
+   ============================================================ */
+
+.canvas,
+.analyst,
+.risk {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: stretch;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.canvas > *,
+.analyst > *,
+.risk > * {
+  flex: 0 0 auto;
+}
+
+/* the combined research and idea surface keeps its own split */
+.workbench {
+  min-height: 520px;
+}
+
+/* the analyst queue is a full-width section now */
+.attention {
+  min-height: 240px;
+}
+
+.models-panel { flex: 0 0 auto; }
+
+/* risk cards read across the full column */
+.rstats { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+
+.attn-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 9px;
+}
+
+.rmetrics { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+
+.exposures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 6px 24px;
+}
+
+.protect-figs { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+
+.donut svg { width: 140px; height: 140px; }
+.donut { width: 140px; height: 140px; }
+.donut-mid strong { font-size: 17px; }
+
+.protect-key {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 6px 20px;
+}
+
+.protect-key li { font-size: 11.5px; }
+
+.sim-top { align-items: center; }
+.sim-key { flex-direction: row; gap: 18px; }
+
+/* the metric row and the signal rows breathe at full width */
+.sig-bot { padding-left: 46px; }
+

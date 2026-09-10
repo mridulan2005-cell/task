@@ -99,16 +99,12 @@ export default function App() {
             <RiskWorkspace />
           ) : role === 'pm' ? (
             <main className="canvas">
-              <div className="col col-main">
-                <MetricStrip />
-                <PortfolioCard />
-                <AllocationCard />
-              </div>
-              <div className="col col-side">
-                <NeedsYou />
-                <SignalsCard />
-                <ProposalsCard />
-              </div>
+              <MetricStrip />
+              <PortfolioCard />
+              <NeedsYou />
+              <SignalsCard />
+              <ProposalsCard />
+              <AllocationCard />
             </main>
           ) : view === 'testbox' ? (
             <ModelTestbox onGraph={setGraphCrumb} />

@@ -50,7 +50,7 @@ export default function AnalystWorkspace({ onOpenTestbox }: { onOpenTestbox: () 
   const idea = ideas.find((i) => i.id === selected) ?? ideas[0];
 
   return (
-    <main className="analyst" style={{ gridTemplateColumns: `minmax(0, 1fr) 6px ${cols.r}px` }}>
+    <main className="analyst">
       <section className="workbench" style={{ gridTemplateColumns: `${cols.l}px 5px minmax(0, 1fr)` }}>
         <ResearchBackup idea={idea} />
         <Handle onDown={cols.start('l')} label="Resize research backup" />
@@ -65,13 +65,11 @@ export default function AnalystWorkspace({ onOpenTestbox }: { onOpenTestbox: () 
         />
       </section>
 
-      <Handle onDown={cols.start('r')} label="Resize the right column" />
-      <div className="col col-right">
-        <ModelsPanel ideaId={idea?.id} ticker={idea?.ticker} onApply={onOpenTestbox} />
-        <section className="card panel attention">
-          <NeedsYou source={ANALYST_NEEDS} variant="bare" note="blocking your work" />
-        </section>
-      </div>
+      <ModelsPanel ideaId={idea?.id} ticker={idea?.ticker} onApply={onOpenTestbox} />
+
+      <section className="card panel attention">
+        <NeedsYou source={ANALYST_NEEDS} variant="bare" note="blocking your work" />
+      </section>
     </main>
   );
 }
