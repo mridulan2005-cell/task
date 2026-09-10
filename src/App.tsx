@@ -10,6 +10,7 @@ import { ProposalsCard, SignalsCard } from './components/SignalsCard';
 import AiPanel from './components/AiPanel';
 import AnalystWorkspace from './components/AnalystWorkspace';
 import ModelTestbox from './components/ModelTestbox';
+import RiskWorkspace from './components/RiskWorkspace';
 import SelectionAsk from './components/SelectionAsk';
 import { answerFor, clockNow } from './data/ai';
 import type { AiTask } from './data/ai';
@@ -23,11 +24,12 @@ export default function App() {
   /* Deep links: #analyst and #testbox open straight into that surface. */
   const hash = typeof window === 'undefined' ? '' : window.location.hash;
   const analystLink = hash === '#analyst' || hash === '#testbox';
+  const riskLink = hash === '#risk';
 
   const [collapsed, setCollapsed] = useState(analystLink);
   const [aiOpen, setAiOpen] = useState(false);
   const [nav, setNav] = useState('dashboard');
-  const [role, setRole] = useState<Role>(analystLink ? 'analyst' : 'pm');
+  const [role, setRole] = useState<Role>(analystLink ? 'analyst' : riskLink ? 'risk' : 'pm');
   const [view, setView] = useState<'work' | 'testbox'>(hash === '#testbox' ? 'testbox' : 'work');
   const [graphCrumb, setGraphCrumb] = useState<string | null>(null);
   const [tabs, setTabs] = useState([{ id: 'w1', label: 'My workspace' }]);
@@ -137,7 +139,9 @@ export default function App() {
         />
 
         <div className="body">
-          {role === 'pm' ? (
+          {role === 'risk' ? (
+            <RiskWorkspace />
+          ) : role === 'pm' ? (
             <main className="canvas">
               <div className="col col-main">
                 <MetricStrip />

@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { Bell, Check, Chevron, Lock, Plus, Search, Spark, X } from './Icons';
 
-export type Role = 'pm' | 'analyst';
+export type Role = 'pm' | 'analyst' | 'risk';
 
 export const ROLES: { id: Role; label: string; sub: string }[] = [
   { id: 'pm', label: 'Portfolio manager', sub: 'Book, risk and approvals' },
   { id: 'analyst', label: 'Analyst', sub: 'Ideas, research and models' },
+  { id: 'risk', label: 'Risk analyst', sub: 'Limits, exceptions and oversight' },
 ];
 
 type Props = {
@@ -88,7 +89,9 @@ export default function TopBar({ tabs, activeTab, onTab, onCloseTab, onNewTab, a
       <div className="top-right">
         <label className="top-search">
           <Search />
-          <input placeholder={role === 'pm' ? 'Search names, agents, orders' : 'Search ideas, sources, models'} />
+          <input placeholder={
+            role === 'pm' ? 'Search names, agents, orders' : role === 'risk' ? 'Search trades, rules, events' : 'Search ideas, sources, models'
+          } />
           <kbd>/</kbd>
         </label>
 
