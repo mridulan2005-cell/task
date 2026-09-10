@@ -1,6 +1,5 @@
 export const RISK_STATS = [
   { value: '1,842', label: 'Rules monitored' },
-  { value: '18,492', label: 'Checks today', delta: '+12% vs. yesterday' },
   { value: '1,284', label: 'Actions taken' },
   { value: '97.8%', label: 'Auto-resolved', bar: 97.8, tone: 'up' as const },
   { value: '3', label: 'Escalations', bar: 4, tone: 'down' as const },
@@ -18,11 +17,33 @@ export type RiskItem = {
   body: string;
   age: string;
   facts: RiskFact[];
+  /* a test escalation is reviewed on the model bench, not approved in place */
+  review?: boolean;
   approve: string;
   suggestions: string[];
 };
 
 export const RISK_ATTENTION: RiskItem[] = [
+  {
+    id: 'r-0',
+    level: 'critical',
+    tag: 'Risk test escalation',
+    title: 'NVDA gain of 4.2% outside the fitted model',
+    body: 'A single-day move test flagged NVDA. The gain is 3.8 sigma past what the VaR model was fitted on, and the position now breaches the single-name cap.',
+    age: '18m ago',
+    review: true,
+    facts: [
+      { k: 'Move', v: '+4.2%' },
+      { k: 'Position', v: '6.4% of NAV' },
+      { k: 'Single-name cap', v: '5.0%' },
+    ],
+    approve: 'Open impact preview',
+    suggestions: [
+      'Trim only as far as the single-name cap requires',
+      'Replay the book against the 2020 liquidity shock first',
+      'Refit the VaR model on the last sixty sessions',
+    ],
+  },
   {
     id: 'r-1',
     level: 'critical',

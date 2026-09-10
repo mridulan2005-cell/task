@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Bell, Check, Chevron, Lock, Plus, Search, X } from './Icons';
 
-export type Role = 'pm' | 'analyst' | 'risk';
+export type Role = 'pm' | 'analyst' | 'risk' | 'trader';
 
 export const ROLES: { id: Role; label: string; sub: string }[] = [
   { id: 'pm', label: 'Portfolio manager', sub: 'Book, risk and approvals' },
   { id: 'analyst', label: 'Analyst', sub: 'Ideas, research and models' },
   { id: 'risk', label: 'Risk analyst', sub: 'Limits, exceptions and oversight' },
+  { id: 'trader', label: 'Trader', sub: 'Execution, fills and the blotter' },
 ];
 
 type Props = {

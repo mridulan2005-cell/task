@@ -6,6 +6,10 @@ import AiPanel from './components/AiPanel';
 import AnalystWorkspace from './components/AnalystWorkspace';
 import ModelTestbox from './components/ModelTestbox';
 import RiskWorkspace from './components/RiskWorkspace';
+import TraderDashboard from './components/TraderDashboard';
+import AgentsView from './components/AgentsView';
+import RiskReview from './components/RiskReview';
+import RiskDoc from './components/RiskDoc';
 import SelectionAsk from './components/SelectionAsk';
 import { answerFor, clockNow } from './data/ai';
 import type { AiContext, AiTask } from './data/ai';
@@ -30,6 +34,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('w1');
   const [tasks, setTasks] = useState<AiTask[]>([]);
   const [context, setContext] = useState<AiContext | null>(null);
+  const [doc, setDoc] = useState<string[] | null>(null);
 
   /* A question asked from a selection runs in the background. Nothing steals
      focus; the copilot panel carries the only signal until it is read. */
@@ -86,8 +91,8 @@ export default function App() {
           onNewTab={newTab}
           role={role}
           onRole={switchRole}
-          crumb={view === 'testbox' ? 'Model testbox' : undefined}
-          crumbLast={view === 'testbox' ? graphCrumb ?? undefined : undefined}
+          crumb={nav !== 'agents' && view === 'testbox' ? (role === 'risk' ? 'Risk review' : 'Model testbox') : undefined}
+          crumbLast={nav !== 'agents' && view === 'testbox' && role !== 'risk' ? graphCrumb ?? undefined : undefined}
           onCrumbHome={() => {
             setView('work');
             setGraphCrumb(null);
@@ -95,8 +100,26 @@ export default function App() {
         />
 
         <div className="body">
-          {role === 'risk' ? (
-            <RiskWorkspace />
+          {nav === 'agents' ? (
+            <AgentsView
+              context={context}
+              onContext={setContext}
+              onGo={(r, v) => {
+                setNav('dashboard');
+                setRole(r);
+                setView(v ?? 'work');
+                setGraphCrumb(null);
+                setCollapsed(r === 'analyst');
+              }}
+            />
+          ) : role === 'risk' ? (
+            view === 'testbox' ? (
+              <RiskReview onContext={setContext} />
+            ) : (
+              <RiskWorkspace />
+            )
+          ) : role === 'trader' ? (
+            <TraderDashboard />
           ) : role === 'pm' ? (
             <PmDashboard context={context} onContext={setContext} />
           ) : view === 'testbox' ? (
@@ -114,11 +137,15 @@ export default function App() {
         context={context}
         mode={role === 'analyst' && view === 'work' ? 'templates' : 'chat'}
         onClearContext={() => setContext(null)}
+        onContext={setContext}
         onAsk={ask}
         onCreateModel={() => setView('testbox')}
+        onDoc={setDoc}
       />
 
       <SelectionAsk onAsk={ask} />
+
+      {doc && <RiskDoc paras={doc} onClose={() => setDoc(null)} />}
     </div>
   );
 }

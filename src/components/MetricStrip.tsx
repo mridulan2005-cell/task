@@ -1,16 +1,26 @@
 import { useState } from 'react';
 import { METRICS } from '../data/fund';
+import type { MetricDef } from '../data/fund';
 import { Pencil, Plus } from './Icons';
 import Picker from './Picker';
 
 const MAX = 5;
 
-export default function MetricStrip({ plain = false }: { plain?: boolean }) {
-  const [shown, setShown] = useState(['nav', 'risk', 'day', 'cash']);
+export default function MetricStrip({
+  plain = false,
+  metrics = METRICS,
+  start = ['nav', 'risk', 'day', 'cash'],
+}: {
+  plain?: boolean;
+  /* the catalogue this desk picks from; a trader reads execution, not the book */
+  metrics?: MetricDef[];
+  start?: string[];
+}) {
+  const [shown, setShown] = useState(start);
   const [editing, setEditing] = useState<number | null>(null);
   const [adding, setAdding] = useState(false);
 
-  const free = METRICS.filter((m) => !shown.includes(m.id));
+  const free = metrics.filter((m) => !shown.includes(m.id));
 
   function swap(slot: number, id: string) {
     const next = [...shown];
@@ -27,7 +37,7 @@ export default function MetricStrip({ plain = false }: { plain?: boolean }) {
   return (
     <div className={`metrics ${plain ? 'is-plain' : ''}`}>
       {shown.map((id, slot) => {
-        const m = METRICS.find((x) => x.id === id)!;
+        const m = metrics.find((x) => x.id === id)!;
         /* Colour the number only when it carries a sign of its own; a level
            like net asset value stays neutral and tints its subline instead. */
         const signed = /^[+-]/.test(m.value);

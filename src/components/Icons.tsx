@@ -277,3 +277,44 @@ export const Target = ({ size = 15, className }: P) => (
     <path d="M12 1.8v2.4M12 19.8v2.4M1.8 12h2.4M19.8 12h2.4" />
   </svg>
 );
+
+export const FileText = ({ size = 20, className }: P) => (
+  <svg {...base(size, className)}>
+    <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+    <path d="M14 3v5h5M9 13h6M9 17h4" />
+  </svg>
+);
+
+export const Image = ({ size = 20, className }: P) => (
+  <svg {...base(size, className)}>
+    <rect x="4" y="4" width="16" height="16" rx="2.5" />
+    <circle cx="9.5" cy="9.5" r="1.4" />
+    <path d="M20 15.5 15.5 11 5 20" />
+  </svg>
+);
+
+export const Upload = ({ size = 16, className }: P) => (
+  <svg {...base(size, className)}>
+    <path d="M12 16V4M8 8l4-4 4 4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+  </svg>
+);
+
+export const Plug = ({ size = 16, className }: P) => (
+  <svg {...base(size, className)}>
+    <path d="M9 3v6M15 3v6M7 9h10v3a5 5 0 0 1-10 0zM12 17v4" />
+  </svg>
+);
+
+export const Edge = ({ size = 16, className }: P) => (
+  <svg {...base(size, className)}>
+    <circle cx="6" cy="18" r="2.4" />
+    <circle cx="18" cy="6" r="2.4" />
+    <path d="M7.7 16.3 16.3 7.7M6 15.6V9a3 3 0 0 1 3-3h6.6" />
+  </svg>
+);
+
+export const Corner = ({ size = 14, className }: P) => (
+  <svg {...base(size, className)}>
+    <path d="M5 5v8a3 3 0 0 0 3 3h11M15 12l4 4-4 4" />
+  </svg>
+);

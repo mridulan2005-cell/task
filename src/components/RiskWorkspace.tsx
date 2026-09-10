@@ -7,22 +7,21 @@ import {
   EVAL_STEPS,
   EXPOSURES,
   PROTECTION,
-  RISK_ATTENTION,
   RISK_METRICS,
   RISK_STATS,
   SIM_BUCKETS,
   SIM_MEASURES,
   simSeries,
 } from '../data/risk';
-import type { RiskItem } from '../data/risk';
-import { Alert, ArrowOut, Check, Chevron, Pencil, Send, Spark, X } from './Icons';
+import PortfolioCard from './PortfolioCard';
+import { Alert, ArrowOut, Check, Chevron, Spark } from './Icons';
 
 export default function RiskWorkspace() {
   return (
     <main className="risk">
       <StatStrip />
 
-      <Attention />
+      <PortfolioCard />
       <RiskState />
       <Protection />
       <RecentActivity />
@@ -41,7 +40,6 @@ function StatStrip() {
         <div className="rstat" key={s.label}>
           <div className="rstat-v">{s.value}</div>
           <div className="rstat-l">{s.label}</div>
-          {s.delta && <div className="rstat-d up">{s.delta}</div>}
           {s.bar !== undefined && (
             <div className={`rstat-bar ${s.tone}`}>
               <i style={{ width: `${s.bar}%` }} />
@@ -50,115 +48,6 @@ function StatStrip() {
         </div>
       ))}
     </section>
-  );
-}
-
-/* ---------------- what needs your attention ---------------- */
-
-function Attention() {
-  const [done, setDone] = useState<string[]>([]);
-  const items = RISK_ATTENTION.filter((i) => !done.includes(i.id));
-
-  return (
-    <section className="card attn">
-      <header className="card-head">
-        <div className="card-title with-count">
-          What needs your attention
-          <em>{items.length}</em>
-        </div>
-        <button className="view-all">
-          View all
-          <ArrowOut size={12} />
-        </button>
-      </header>
-
-      <div className="attn-list">
-        {items.map((it) => (
-          <AttnItem key={it.id} item={it} onClose={() => setDone([...done, it.id])} />
-        ))}
-        {items.length === 0 && (
-          <div className="empty">
-            <strong>Nothing is waiting on you.</strong>
-            <span>The agent is operating inside policy.</span>
-          </div>
-        )}
-      </div>
-    </section>
-  );
-}
-
-function AttnItem({ item, onClose }: { item: RiskItem; onClose: () => void }) {
-  const [editing, setEditing] = useState(false);
-  const [text, setText] = useState('');
-
-  return (
-    <article className={`attn-item l-${item.level}`}>
-      <header>
-        <span className="attn-ic">
-          <Alert size={13} />
-        </span>
-        <span className="attn-title">{item.title}</span>
-        <span className={`attn-tag t-${item.level}`}>{item.tag}</span>
-        <span className="attn-age">{item.age}</span>
-      </header>
-
-      <p className="attn-body">{item.body}</p>
-
-      <dl className="attn-facts">
-        {item.facts.map((f) => (
-          <div key={f.k}>
-            <dt>{f.k}</dt>
-            <dd>
-              {f.arrow && <em className="to">to</em>}
-              {f.v}
-            </dd>
-          </div>
-        ))}
-      </dl>
-
-      {editing ? (
-        <div className="attn-edit">
-          <div className="block-h as-label">Edit with AI</div>
-          <ul className="attn-sugg">
-            {item.suggestions.map((s) => (
-              <li key={s}>
-                <button onClick={() => setText(s)}>{s}</button>
-              </li>
-            ))}
-          </ul>
-          <div className="attn-field">
-            <Spark size={14} />
-            <input
-              autoFocus
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && text.trim() && onClose()}
-              placeholder="Describe the change you want"
-            />
-            <button className="attn-send" disabled={!text.trim()} onClick={() => text.trim() && onClose()} title="Send the edit">
-              <Send size={14} />
-            </button>
-          </div>
-          <button className="attn-cancel" onClick={() => setEditing(false)}>
-            <X size={11} />
-            Cancel
-          </button>
-        </div>
-      ) : (
-        <div className="attn-actions">
-          <button className="btn-dark" onClick={onClose}>
-            {item.approve}
-          </button>
-          <button className="btn-quiet" onClick={onClose}>
-            Reject
-          </button>
-          <button className="btn-quiet" onClick={() => setEditing(true)}>
-            <Pencil size={12} />
-            Edit
-          </button>
-        </div>
-      )}
-    </article>
   );
 }
 

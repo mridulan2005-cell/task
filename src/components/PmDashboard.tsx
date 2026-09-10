@@ -1,13 +1,8 @@
-import { useState } from 'react';
 import MetricStrip from './MetricStrip';
 import PortfolioCard, { PortfolioTabs } from './PortfolioCard';
-import NeedsYou from './NeedsYou';
-import { NEEDS_YOU } from '../data/needs';
 import { SIGNALS } from '../data/signals';
-import { ArrowOut, Chevron } from './Icons';
+import { ArrowOut } from './Icons';
 import type { AiContext } from '../data/ai';
-
-const LEVEL: Record<string, string> = { critical: 'Blocking', high: 'Today', routine: 'Routine' };
 
 export default function PmDashboard({
   context,
@@ -16,8 +11,6 @@ export default function PmDashboard({
   context: AiContext | null;
   onContext: (c: AiContext | null) => void;
 }) {
-  const [expanded, setExpanded] = useState(false);
-
   return (
     <main className="canvas pm">
       <MetricStrip plain />
@@ -25,51 +18,6 @@ export default function PmDashboard({
       <PortfolioCard />
 
       <PortfolioTabs />
-
-      <section className="pm-block">
-        <header className="pm-block-h">
-          <h3>What needs you right now</h3>
-          <button className="view-all" onClick={() => setExpanded(!expanded)}>
-            {expanded ? 'Show less' : 'View all'}
-            {expanded ? <Chevron size={12} /> : <ArrowOut size={12} />}
-          </button>
-        </header>
-
-        {expanded ? (
-          <NeedsYou variant="bare" />
-        ) : (
-          <ul className="pri-list">
-            {NEEDS_YOU.slice(0, 3).map((n) => (
-              <li key={n.id}>
-                <button
-                  className={`pri ${n.priority} ${context?.id === n.id ? 'is-on' : ''}`}
-                  onClick={() =>
-                    onContext(
-                      context?.id === n.id
-                        ? null
-                        : {
-                            id: n.id,
-                            kind: 'need',
-                            title: n.title,
-                            sub: `${n.agent} agent · raised ${n.age} ago`,
-                            questions: [
-                              'Why was this raised?',
-                              `What happens if I ${n.options[0].label.toLowerCase()}?`,
-                              'Show me the sources behind it',
-                            ],
-                          },
-                    )
-                  }
-                >
-                  <span className="pri-flag">{LEVEL[n.priority]}</span>
-                  <span className="pri-t">{n.title}</span>
-                  <span className="pri-age">{n.age}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
 
       <section className="pm-block">
         <header className="pm-block-h">

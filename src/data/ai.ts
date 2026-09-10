@@ -1,3 +1,5 @@
+import type { Ticket } from './riskModels';
+
 export type TaskState = 'working' | 'ready' | 'read';
 
 /* What the PM has tagged for the copilot by picking a card. */
@@ -13,6 +15,12 @@ export type AiContext = {
   actions?: string[];
   /* the one large offer at the top of the panel */
   cta?: { label: string; note: string };
+  /* what the officer can do with the bench once the testing is done */
+  tools?: { id: string; label: string; note: string }[];
+  /* the drafted order the bench arrives at, shown when the tool is opened */
+  ticket?: Ticket;
+  /* the same work written for someone who was not in the room */
+  summary?: string[];
 };
 
 export type AiTask = {
@@ -74,4 +82,22 @@ export function answerFor(question: string, quote: string): { answer: string; so
 export function clockNow(): string {
   const d = new Date();
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+/* Follow-ups are cut from the answer that just landed, so they read as the
+   next question rather than a standing menu. */
+export function followUpsFor(question: string, quote: string): string[] {
+  const t = tickerIn(quote) ?? tickerIn(question);
+  const s = t ?? 'this';
+  const intent = intentOf(question);
+
+  if (intent === 'why')
+    return [`What would reverse the ${s} move`, `How much of it is the sector rather than the name`, `Show the fills behind the 14:32 re-rating`];
+  if (intent === 'risk')
+    return [`What trim clears the sector cap on ${s}`, `Which limit binds first if the book grows`, `How does tracking error look after the trim`];
+  if (intent === 'compare')
+    return [`Split the gap into selection and allocation`, `Which peer is closest to ${s} on positioning`, `Run the same comparison over one year`];
+  if (intent === 'act')
+    return [`Draft the ${s} order at 15% of volume`, `What does the trim cost in tracking error`, `Who has to approve this before the close`];
+  return [`Show the realised number next to the mark`, `What drives the ${s} carry from here`, `Where does this figure come from`];
 }
