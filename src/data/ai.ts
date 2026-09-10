@@ -3,11 +3,16 @@ export type TaskState = 'working' | 'ready' | 'read';
 /* What the PM has tagged for the copilot by picking a card. */
 export type AiContext = {
   id: string;
-  kind: 'need' | 'signal';
+  kind: 'need' | 'signal' | 'idea' | 'model' | 'node';
   title: string;
   sub: string;
   questions: string[];
+  /* an action the agent already has drafted */
   action?: { text: string; detail: string };
+  /* things the PM could do next, offered as one-click asks */
+  actions?: string[];
+  /* the one large offer at the top of the panel */
+  cta?: { label: string; note: string };
 };
 
 export type AiTask = {

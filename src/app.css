@@ -6099,3 +6099,180 @@ i.ok {
 .ai-send:disabled { opacity: 0.3; cursor: default; }
 .ai-send:not(:disabled):hover { background: var(--accent-hover); }
 
+
+/* ============================================================
+   Research phase: the workbench fills the middle, above the fold
+   ============================================================ */
+
+.analyst {
+  overflow: hidden;
+}
+
+.analyst .workbench {
+  flex: 1;
+  min-height: 0;
+}
+
+.ideagen-note {
+  font-size: 11px;
+  color: var(--ink-4);
+}
+
+/* the copilot as the model shelf */
+
+.ai-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px 12px;
+  border-bottom: 1px solid var(--line-2);
+}
+
+.ai-cta .btn-dark { height: 36px; font-size: 12.75px; }
+
+.ai-cta-n {
+  font-size: 10.75px;
+  color: var(--ink-3);
+  text-align: center;
+}
+
+.tpl-list.in-ai {
+  max-height: none;
+  margin-top: 8px;
+}
+
+.tpl-list.in-ai .tpl-check {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.tpl-run {
+  font-size: 10px;
+  color: var(--ink-4);
+  white-space: nowrap;
+}
+
+.ai-sugg button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ai-sugg button svg { color: var(--ink-4); flex: 0 0 auto; }
+
+/* ============================================================
+   Model workspace and the wiring surface
+   ============================================================ */
+
+.graph-left {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  min-width: 0;
+}
+
+.graph-model { flex: 0 0 auto; }
+
+.graph-others {
+  flex: 1;
+  min-height: 0;
+}
+
+.graph-others .run { cursor: pointer; }
+
+.graph-main {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.canvas-panel {
+  flex: 1;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* the surface itself: dotted, draggable, quietly lit */
+
+.canvas-dots {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background-color: #fbfbfc;
+  background-image: radial-gradient(circle, #d9dcdf 1px, transparent 1px);
+  background-size: 22px 22px;
+  background-position: -1px -1px;
+  cursor: grab;
+}
+
+.canvas-panel.is-panning .canvas-dots { cursor: grabbing; }
+
+.canvas-dots .canvas-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+}
+
+.canvas-panel .gnode {
+  box-shadow: 0 6px 18px rgba(17, 18, 19, 0.09), 0 1px 3px rgba(17, 18, 19, 0.07);
+  cursor: pointer;
+}
+
+.canvas-panel .gnode.is-on {
+  box-shadow: 0 0 0 1px var(--accent), 0 10px 26px rgba(29, 125, 224, 0.22);
+}
+
+.canvas-panel .wire {
+  stroke-width: 1.6;
+}
+
+/* the blocks you can drop in */
+
+.drops {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 0 2px;
+}
+
+.drops button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 11.5px;
+  color: var(--ink-2);
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.14s ease, color 0.14s ease, transform 0.14s ease;
+}
+
+.drops button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.drops button:active { transform: translateY(1px); }
+
+.drops button.is-plain {
+  border-style: dashed;
+  color: var(--ink-3);
+}
+
+.graph-main .terminal {
+  flex: 0 0 auto;
+  height: 210px;
+}
+
+.testbox.is-wired { align-items: stretch; }
+

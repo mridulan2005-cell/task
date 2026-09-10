@@ -98,14 +98,23 @@ export default function App() {
           ) : role === 'pm' ? (
             <PmDashboard context={context} onContext={setContext} />
           ) : view === 'testbox' ? (
-            <ModelTestbox onGraph={setGraphCrumb} />
+            <ModelTestbox onGraph={setGraphCrumb} onContext={setContext} />
           ) : (
-            <AnalystWorkspace onOpenTestbox={() => setView('testbox')} />
+            <AnalystWorkspace onContext={setContext} />
           )}
         </div>
       </div>
 
-      <AiPanel tasks={tasks} nudge={nudge} role={role} context={context} onClearContext={() => setContext(null)} onAsk={ask} />
+      <AiPanel
+        tasks={tasks}
+        nudge={nudge}
+        role={role}
+        context={context}
+        mode={role === 'analyst' && view === 'work' ? 'templates' : 'chat'}
+        onClearContext={() => setContext(null)}
+        onAsk={ask}
+        onCreateModel={() => setView('testbox')}
+      />
 
       <SelectionAsk onAsk={ask} />
     </div>

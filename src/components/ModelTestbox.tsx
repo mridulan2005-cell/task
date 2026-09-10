@@ -1,19 +1,20 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import LineChart from './LineChart';
 import type { Series } from './LineChart';
 import Picker from './Picker';
-import ModelGraphView from './ModelGraphView';
+import GraphCanvas, { GraphLeft } from './ModelGraphView';
 import { Handle, useColumns } from './Resizer';
-import { FORMATS, MODELS, MODEL_RANGES, defaults, modelLabels, modelPath, outcome, windowOf } from '../data/testbox';
+import { MODELS, MODEL_RANGES, defaults, modelLabels, modelPath, outcome, windowOf } from '../data/testbox';
 import type { ModelRange, Param, TestModel } from '../data/testbox';
-import { Box, Calendar, Check, Chevron, Nodes, Pencil, Plus, Send, Spark, SrcDoc } from './Icons';
+import { Box, Calendar, Check, Chevron, Nodes, Plus, Spark } from './Icons';
+import type { AiContext } from '../data/ai';
 
 type State = { params: Param[]; values: Record<string, number>; range: ModelRange };
 
 const dollars = (v: number) => `$${v.toFixed(2)}`;
 const dollarsAxis = (v: number) => `$${v.toFixed(0)}`;
 
-export default function ModelTestbox({ onGraph }: { onGraph: (name: string | null) => void }) {
+export default function ModelTestbox({ onGraph, onContext }: { onGraph: (name: string | null) => void; onContext: (c: AiContext | null) => void }) {
   const cols = useColumns({ min: 190, max: 340, start: 216 }, { min: 260, max: 440, start: 310 });
 
   const [on, setOn] = useState<string[]>(MODELS.map((m) => m.id));
@@ -27,6 +28,29 @@ export default function ModelTestbox({ onGraph }: { onGraph: (name: string | nul
 
   const shown = MODELS.filter((m) => on.includes(m.id));
   const wired = MODELS.find((m) => m.id === graph);
+
+  /* The copilot offers the report and takes its suggestions from the bench. */
+  useEffect(() => {
+    if (graph) return;
+    const names = shown.map((m) => m.name);
+    onContext(
+      shown.length
+        ? {
+            id: 'bench',
+            kind: 'model',
+            title: names.length === 1 ? names[0] : `${names.length} models on the bench`,
+            sub: names.join(' · '),
+            cta: { label: 'Generate live model report', note: 'Built from what is selected, updates as you move parameters' },
+            questions: [
+              'Which model carries the case?',
+              'Where do the three disagree?',
+              'What breaks if the disputed input is wrong?',
+            ],
+            actions: ['Re-run all with the conservative inputs', 'Compare the outputs side by side', 'Send the strongest one to the PM'],
+          }
+        : null,
+    );
+  }, [shown, graph, onContext]);
 
   function openGraph(id: string | null) {
     setGraph(id);
@@ -54,7 +78,19 @@ export default function ModelTestbox({ onGraph }: { onGraph: (name: string | nul
   }
 
   return (
-    <main className={`testbox ${wired ? 'is-wired' : ''}`} style={{ gridTemplateColumns: wired ? `${cols.l}px 6px minmax(0, 1fr)` : cols.template }}>
+    <main className={`testbox ${wired ? 'is-wired' : ''}`} style={{ gridTemplateColumns: `${cols.l}px 6px minmax(0, 1fr)` }}>
+      {wired ? (
+        <GraphLeft
+          model={wired}
+          models={MODELS}
+          params={state[wired.id].params}
+          values={state[wired.id].values}
+          range={state[wired.id].range}
+          onRange={(r) => setRange(wired.id, r)}
+          onPick={(id) => openGraph(id)}
+          onBack={() => openGraph(null)}
+        />
+      ) : (
       <section className="card panel runlist">
         <header className="panel-head">
           <div>
@@ -99,18 +135,12 @@ export default function ModelTestbox({ onGraph }: { onGraph: (name: string | nul
           </button>
         </footer>
       </section>
+      )}
 
       <Handle onDown={cols.start('l')} label="Resize the model list" />
 
       {wired ? (
-        <ModelGraphView
-          model={wired}
-          params={state[wired.id].params}
-          values={state[wired.id].values}
-          range={state[wired.id].range}
-          onRange={(r) => setRange(wired.id, r)}
-          onBack={() => openGraph(null)}
-        />
+        <GraphCanvas model={wired} onContext={onContext} />
       ) : (
       <div className="testbox-mid">
         {shown.map((m) => (
@@ -138,10 +168,6 @@ export default function ModelTestbox({ onGraph }: { onGraph: (name: string | nul
         )}
       </div>
       )}
-
-      {!wired && <Handle onDown={cols.start('r')} label="Resize the report" />}
-
-      {!wired && <LiveReport shown={shown} state={state} />}
     </main>
   );
 }
@@ -281,128 +307,6 @@ function ModelCard({
               align="right"
               onPick={onAddParam}
               onClose={onCloseAdd}
-            />
-          )}
-        </div>
-      </footer>
-    </section>
-  );
-}
-
-/* ---------------- right: live model report ---------------- */
-
-function LiveReport({ shown, state }: { shown: TestModel[]; state: Record<string, State> }) {
-  const [edit, setEdit] = useState<string | null>(null);
-  const [text, setText] = useState<Record<string, string>>({});
-  const [format, setFormat] = useState('memo');
-  const [picking, setPicking] = useState(false);
-  const [sent, setSent] = useState(false);
-
-  const fmt = FORMATS.find((f) => f.id === format)!;
-
-  const best = shown
-    .map((m) => ({ m, out: outcome(m, state[m.id].params, state[m.id].values) }))
-    .sort((a, b) => b.out - a.out)[0];
-
-  const conclusion = best
-    ? `${best.m.name} carries the case at ${best.out >= 0 ? '+' : ''}${best.out.toFixed(1)}% over eight quarters. The other ${shown.length - 1} model${shown.length === 2 ? '' : 's'} on the bench agree on direction and differ on size.`
-    : 'Nothing is on the bench yet.';
-
-  return (
-    <section className="card panel report">
-      <header className="panel-head">
-        <div>
-          <div className="card-title">Live model report</div>
-          <div className="card-sub">Built from {shown.length} models &middot; updates as you move parameters</div>
-        </div>
-        <span className="live">
-          <i />
-          Live
-        </span>
-      </header>
-
-      <div className="panel-body">
-        {shown.map((m) => {
-          const body = text[m.id] ?? m.line(state[m.id].values);
-          return (
-            <section className="rep" key={m.id}>
-              <div className="rep-h">
-                <span className="rep-n">{m.name}</span>
-                <button className="icon-btn" onClick={() => setEdit(edit === m.id ? null : m.id)} title="Edit this finding">
-                  <Pencil size={12} />
-                </button>
-              </div>
-              {edit === m.id ? (
-                <textarea
-                  autoFocus
-                  rows={4}
-                  value={body}
-                  onChange={(e) => setText({ ...text, [m.id]: e.target.value })}
-                  onBlur={() => setEdit(null)}
-                />
-              ) : (
-                <p>{body}</p>
-              )}
-            </section>
-          );
-        })}
-
-        <section className="rep rep-end">
-          <div className="rep-h">
-            <span className="rep-n">Conclusion</span>
-            <button className="icon-btn" onClick={() => setEdit(edit === 'end' ? null : 'end')} title="Edit the conclusion">
-              <Pencil size={12} />
-            </button>
-          </div>
-          {edit === 'end' ? (
-            <textarea
-              autoFocus
-              rows={4}
-              value={text.end ?? conclusion}
-              onChange={(e) => setText({ ...text, end: e.target.value })}
-              onBlur={() => setEdit(null)}
-            />
-          ) : (
-            <p>{text.end ?? conclusion}</p>
-          )}
-        </section>
-      </div>
-
-      <footer className="proposal">
-        <div className="prop-t">
-          <strong>{sent ? 'Proposal sent to Mira Kapoor.' : 'Send this proposal to the portfolio manager?'}</strong>
-          <span>
-            {sent
-              ? 'She will see it in her attention queue with every parameter attached.'
-              : `${shown.length} models, ${shown.reduce((n, m) => n + state[m.id].params.length, 0)} parameters, ready to go.`}
-          </span>
-        </div>
-
-        <div className="prop-row">
-          <button className="prop-file" onClick={() => setPicking(!picking)} title="Change the format">
-            <SrcDoc size={16} />
-            <span className="prop-file-t">
-              <span className="prop-file-n">{fmt.label}</span>
-              <span className="prop-file-s">{fmt.sub}</span>
-            </span>
-            <Chevron size={12} />
-          </button>
-
-          <button className="btn-dark" onClick={() => setSent(true)} disabled={sent}>
-            <Send size={14} />
-            {sent ? 'Sent' : 'Send'}
-          </button>
-
-          {picking && (
-            <Picker
-              items={FORMATS.map((f) => ({ id: f.id, label: f.label, sub: f.sub }))}
-              active={format}
-              placeholder="Search formats"
-              onPick={(id) => {
-                setFormat(id);
-                setPicking(false);
-              }}
-              onClose={() => setPicking(false)}
             />
           )}
         </div>
