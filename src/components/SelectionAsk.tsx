@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Chevron, Send, Spark } from './Icons';
+import { Chevron, Send, Spark, X } from './Icons';
+import { labelOf, quoteOf, useRegions } from './Regions';
 
-type Anchor = { text: string; x: number; y: number };
+type Tag = { id: string; label: string };
+type Anchor = { text: string; x: number; y: number; tags?: Tag[] };
 
 const CHIP_W = 84;
 const POP_W = 320;
@@ -24,6 +26,15 @@ export default function SelectionAsk({ onAsk }: { onAsk: (quote: string, questio
   const [showQuote, setShowQuote] = useState(false);
   const field = useRef<HTMLInputElement>(null);
   const pop = useRef<HTMLDivElement>(null);
+  const { regions, remove, clear } = useRegions();
+
+  /* Sections dragged out of the charts outrank a stray text selection: they
+     take deliberate work, and they are what the question is about. */
+  const last = regions[regions.length - 1];
+  const fromCharts: Anchor | null = last
+    ? { text: quoteOf(regions), x: last.anchor.x, y: last.anchor.y, tags: regions.map((r) => ({ id: r.id, label: labelOf(r) })) }
+    : null;
+  const pending = fromCharts ?? chip;
 
   const read = useCallback(() => {
     const s = window.getSelection();
@@ -64,22 +75,38 @@ export default function SelectionAsk({ onAsk }: { onAsk: (quote: string, questio
     };
   }, [asking]);
 
+  /* Escape drops the sections before anything has been asked about them. */
+  useEffect(() => {
+    if (asking || regions.length === 0) return;
+    function esc(e: KeyboardEvent) {
+      if (e.key === 'Escape') clear();
+    }
+    document.addEventListener('keydown', esc);
+    return () => document.removeEventListener('keydown', esc);
+  }, [asking, regions.length, clear]);
+
+  /* Dropping the last section closes the question with it. */
+  useEffect(() => {
+    if (asking?.tags && regions.length === 0) close();
+  }, [asking, regions.length]);
+
   function close() {
     setAsking(null);
     setQ('');
     setShowQuote(false);
+    clear();
   }
 
   function open() {
-    if (!chip) return;
-    setAsking(chip);
+    if (!pending) return;
+    setAsking(pending);
     setChip(null);
     window.getSelection()?.removeAllRanges();
   }
 
   function send() {
     if (!asking || !q.trim()) return;
-    onAsk(asking.text, q.trim());
+    onAsk(regions.length > 0 ? quoteOf(regions) : asking.text, q.trim());
     close();
   }
 
@@ -87,15 +114,16 @@ export default function SelectionAsk({ onAsk }: { onAsk: (quote: string, questio
 
   return (
     <>
-      {chip && (
+      {!asking && pending && (
         <button
           className="ask-chip"
-          style={{ left: clamp(chip.x, CHIP_W), top: Math.max(chip.y - 38, 8) }}
+          style={{ left: clamp(pending.x, CHIP_W), top: Math.max(pending.y - 38, 8) }}
           onMouseDown={(e) => e.preventDefault()}
           onClick={open}
         >
           <Spark size={13} />
           Ask AI
+          {regions.length > 1 && <em className="ask-chip-n">{regions.length}</em>}
         </button>
       )}
 
@@ -106,10 +134,24 @@ export default function SelectionAsk({ onAsk }: { onAsk: (quote: string, questio
           ref={pop}
           style={{ left: clamp(asking.x, POP_W), top: Math.max(asking.y - 30, 8), width: POP_W }}
         >
-          <button className={`ask-quote ${showQuote ? 'is-open' : ''}`} onClick={() => setShowQuote(!showQuote)}>
-            <Chevron size={12} className={showQuote ? '' : 'is-shut'} />
-            <span className="ask-quote-t">{asking.text}</span>
-          </button>
+          {regions.length > 0 ? (
+            <ul className="ask-tags">
+              {regions.map((r) => (
+                <li key={r.id}>
+                  <span className="ask-tag-l">{labelOf(r)}</span>
+                  <em>{r.points} pts</em>
+                  <button onClick={() => remove(r.id)} title="Drop this section">
+                    <X size={9} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <button className={`ask-quote ${showQuote ? 'is-open' : ''}`} onClick={() => setShowQuote(!showQuote)}>
+              <Chevron size={12} className={showQuote ? '' : 'is-shut'} />
+              <span className="ask-quote-t">{asking.text}</span>
+            </button>
+          )}
 
           <div className="ask-field">
             <input

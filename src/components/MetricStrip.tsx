@@ -1,20 +1,23 @@
 import { useState } from 'react';
 import { METRICS } from '../data/fund';
 import type { MetricDef } from '../data/fund';
-import { Pencil, Plus } from './Icons';
+import { ArrowOut, Pencil, Plus } from './Icons';
 import Picker from './Picker';
 
-const MAX = 5;
+const MAX = 6;
 
 export default function MetricStrip({
   plain = false,
   metrics = METRICS,
-  start = ['nav', 'risk', 'day', 'cash'],
+  start = ['nav', 'risk', 'day', 'cash', 'decisions'],
+  onPanel,
 }: {
   plain?: boolean;
   /* the catalogue this desk picks from; a trader reads execution, not the book */
   metrics?: MetricDef[];
   start?: string[];
+  /* a figure with a record behind it asks for the record to be opened */
+  onPanel?: (panel: string) => void;
 }) {
   const [shown, setShown] = useState(start);
   const [editing, setEditing] = useState<number | null>(null);
@@ -44,8 +47,23 @@ export default function MetricStrip({
         return (
           <div className={`metric ${editing === slot ? 'is-open' : ''}`} key={id}>
             <span className="metric-k">{m.label}</span>
-            <span className={`metric-v ${signed ? m.tone ?? '' : ''}`}>{m.value}</span>
-            <span className={`metric-s ${signed ? '' : m.tone ?? ''}`}>{m.sub}</span>
+
+            {/* A count of things that happened is a way into them. A level is
+                not, so only the ones with a record behind them open. */}
+            {m.panel ? (
+              <button className="metric-open" onClick={() => onPanel?.(m.panel!)}>
+                <span className={`metric-v ${signed ? m.tone ?? '' : ''}`}>{m.value}</span>
+                <span className={`metric-s ${signed ? '' : m.tone ?? ''}`}>
+                  {m.sub}
+                  <ArrowOut size={11} />
+                </span>
+              </button>
+            ) : (
+              <>
+                <span className={`metric-v ${signed ? m.tone ?? '' : ''}`}>{m.value}</span>
+                <span className={`metric-s ${signed ? '' : m.tone ?? ''}`}>{m.sub}</span>
+              </>
+            )}
 
             <button className="metric-edit" onClick={() => setEditing(editing === slot ? null : slot)} title={`Replace ${m.label}`}>
               <Pencil size={13} />

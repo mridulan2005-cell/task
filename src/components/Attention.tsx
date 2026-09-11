@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Alert, Chevron, X } from './Icons';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Alert, Bulb, Chevron, X } from './Icons';
 import { ATTENTION } from '../data/attention';
 import type { Attn } from '../data/attention';
 import type { Role } from './TopBar';
@@ -22,10 +22,14 @@ export function useAttention(role: Role) {
 
   const live = useMemo(() => items.filter((i) => !cleared.includes(i.id)), [items, cleared]);
 
+  /* Stable, and it ignores a second clear of the same thing, so a surface can
+     call it on every render without the list growing or the panel looping. */
+  const clear = useCallback((id: string) => setCleared((c) => (c.includes(id) ? c : [...c, id])), []);
+
   return {
     intruding: live.filter((i) => i.urgency === 'intrude'),
     nudges: live.filter((i) => i.urgency === 'nudge'),
-    clear: (id: string) => setCleared((c) => [...c, id]),
+    clear,
   };
 }
 
@@ -37,6 +41,8 @@ export function contextFor(a: Attn): AiContext {
     sub: `${a.agent} agent · raised ${a.age} ago`,
     questions: a.questions,
     action: { text: a.primary, detail: a.body },
+    sources: a.sources,
+    detail: a.detail,
   };
 }
 
@@ -46,9 +52,11 @@ type Props = {
   context: AiContext | null;
   onContext: (c: AiContext | null) => void;
   onClear: (id: string) => void;
+  /* a card that is a door rather than a decision opens its surface */
+  onOpen?: (where: 'workspace') => void;
 };
 
-export default function Attention({ intruding, nudges, context, onContext, onClear }: Props) {
+export default function Attention({ intruding, nudges, context, onContext, onClear, onOpen }: Props) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -64,11 +72,9 @@ export default function Attention({ intruding, nudges, context, onContext, onCle
             <button
               key={a.id}
               className={`attn-card-c t-${a.tone} ${context?.id === a.id ? 'is-on' : ''}`}
-              onClick={() => onContext(context?.id === a.id ? null : contextFor(a))}
+              onClick={() => (a.opens ? onOpen?.(a.opens) : onContext(context?.id === a.id ? null : contextFor(a)))}
             >
-              <span className="attn-card-ic">
-                <Alert size={19} />
-              </span>
+              <span className="attn-card-ic">{a.tone === 'idea' ? <Bulb size={19} /> : <Alert size={19} />}</span>
               <span className="attn-card-w">
                 <span className="attn-card-t">{a.title}</span>
                 <span className="attn-card-b">{a.body}</span>

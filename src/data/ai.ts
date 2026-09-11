@@ -1,4 +1,8 @@
 import type { Ticket } from './riskModels';
+import type { Source } from './needs';
+import type { Detail } from './attention';
+import { figureFor } from './figures';
+import type { Figure } from './figures';
 
 export type TaskState = 'working' | 'ready' | 'read';
 
@@ -9,8 +13,10 @@ export type AiContext = {
   title: string;
   sub: string;
   questions: string[];
-  /* an action the agent already has drafted */
-  action?: { text: string; detail: string };
+  /* An action the agent already has drafted. 'pending' means an agent is
+     still working and there is nothing to approve yet, so the panel says so
+     instead of offering a control that would do nothing. */
+  action?: { text: string; detail: string; pending?: boolean };
   /* things the PM could do next, offered as one-click asks */
   actions?: string[];
   /* the one large offer at the top of the panel */
@@ -21,17 +27,26 @@ export type AiContext = {
   ticket?: Ticket;
   /* the same work written for someone who was not in the room */
   summary?: string[];
+  /* what the agent read to raise it, shown behind the sources overlay */
+  sources?: Source[];
+  /* the full write-up behind an item from the queue. Its presence is what
+     turns the panel into the detail view rather than the chat. */
+  detail?: Detail;
 };
 
 export type AiTask = {
   id: string;
+  /* What the question was asked about. Empty when it was asked of the book at
+     large, and the answer then carries no reference line. */
   quote: string;
   question: string;
   state: TaskState;
   asked: string;
   seconds: number;
   answer: string;
-  sources: string[];
+  sources: Source[];
+  /* the shape that came back with the answer */
+  figure?: Figure;
 };
 
 const TICKERS = ['NVDA', 'MSFT', 'LLY', 'TSM', 'JPM', 'XOM', 'UNH', 'ASML', 'CAT', 'PLTR', 'VRT', 'AVGO', 'CRWD', 'DE', 'SHEL', 'NEE'];
@@ -40,7 +55,11 @@ function tickerIn(s: string): string | null {
   return TICKERS.find((t) => s.toUpperCase().includes(t)) ?? null;
 }
 
-function intentOf(q: string): 'why' | 'risk' | 'compare' | 'act' | 'explain' {
+/* What the question is after, which decides both how the answer reads and
+   which shape comes back with it. */
+export type Intent = 'why' | 'risk' | 'compare' | 'act' | 'explain';
+
+export function intentOf(q: string): Intent {
   const s = q.toLowerCase();
   /* Comparison wins over cause, so "why are we ahead of the benchmark"
      answers with relative numbers rather than a driver breakdown. */
@@ -53,7 +72,45 @@ function intentOf(q: string): 'why' | 'risk' | 'compare' | 'act' | 'explain' {
 
 /* Answers are composed from the selection and the question so the panel reads
    like the agent actually looked at what the PM highlighted. */
-export function answerFor(question: string, quote: string): { answer: string; sources: string[]; seconds: number } {
+/* What each kind of answer had to read. The list is longer than the answer
+   needs so the overlay behaves like a real file list rather than a footnote. */
+const READS: Record<Intent, Source[]> = {
+  why: [
+    { label: 'Position file — consolidated', kind: 'sheet' },
+    { label: 'Order blotter, today', kind: 'sheet' },
+    { label: 'Sector re-rating note', kind: 'doc' },
+    { label: 'Market data feed', kind: 'feed' },
+    { label: 'Desk thread — semis', kind: 'chat' },
+  ],
+  risk: [
+    { label: 'Risk limits — mandate', kind: 'doc' },
+    { label: 'Position file — consolidated', kind: 'sheet' },
+    { label: 'var-daily (repo)', kind: 'repo' },
+    { label: 'Tracking error run, 08:10', kind: 'sheet' },
+    { label: 'Team drive — Q3 limits', kind: 'drive' },
+  ],
+  compare: [
+    { label: 'Position file — consolidated', kind: 'sheet' },
+    { label: 'Benchmark feed — S&P 500', kind: 'feed' },
+    { label: 'Peer group holdings', kind: 'sheet' },
+    { label: 'attribution (repo)', kind: 'repo' },
+    { label: 'Team drive — Q3 folder', kind: 'drive' },
+  ],
+  act: [
+    { label: 'Order blotter, today', kind: 'sheet' },
+    { label: 'Risk limits — mandate', kind: 'doc' },
+    { label: 'Execution schedule', kind: 'sheet' },
+    { label: 'Desk thread — execution', kind: 'chat' },
+  ],
+  explain: [
+    { label: 'Position file — consolidated', kind: 'sheet' },
+    { label: 'Cost basis — March', kind: 'doc' },
+    { label: 'Mark-to-market cycle', kind: 'feed' },
+    { label: 'Team drive — accounting', kind: 'drive' },
+  ],
+};
+
+export function answerFor(question: string, quote: string): { answer: string; sources: Source[]; seconds: number; figure: Figure } {
   const t = tickerIn(quote) ?? tickerIn(question);
   const subject = t ?? 'the highlighted figure';
   const Subject = t ?? 'The highlighted figure';
@@ -70,13 +127,14 @@ export function answerFor(question: string, quote: string): { answer: string; so
             ? `The cleanest action is a partial trim rather than a full exit. Taking 1.4% out of ${subject} over the last hour keeps you inside 15% of average volume, clears the cap before the close and leaves the thesis intact. Risk has the order drafted and it needs your approval to work.`
             : `${Subject} is carried at 6.2% of gross with a cost basis set in March. The figure you highlighted is the mark-to-market number, not realised, and it updates on the 15 minute cycle. The realised number for the same position is smaller by roughly a third.`;
 
-  const sources =
-    intent === 'compare' ? ['Position file', 'Benchmark feed', 'Peer group'] : intent === 'risk' ? ['Risk limits', 'Position file'] : ['Position file', 'Order blotter'];
+  const sources = READS[intent];
 
   const words = question.trim().split(/\s+/).length + quote.trim().split(/\s+/).length;
   const seconds = Math.min(Math.max(2.5 + words * 0.12, 2.5), 8);
 
-  return { answer, sources, seconds: +seconds.toFixed(1) };
+  /* The chart is cut from the same question and the same selection as the
+     words, so the two can never describe different things. */
+  return { answer, sources, seconds: +seconds.toFixed(1), figure: figureFor(intent, subject, quote) };
 }
 
 export function clockNow(): string {

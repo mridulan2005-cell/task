@@ -7,6 +7,8 @@ export const RISK_STATS = [
 
 /* ---------------- attention ---------------- */
 
+import type { Source } from './needs';
+
 export type RiskFact = { k: string; v: string; arrow?: boolean };
 
 export type RiskItem = {
@@ -20,7 +22,14 @@ export type RiskItem = {
   /* a test escalation is reviewed on the model bench, not approved in place */
   review?: boolean;
   approve: string;
+  /* the detail view: the figures it leads with, why it stopped here, and what
+     the agent would do about it */
+  stats?: { k: string; v: string; tone?: 'up' | 'down' | 'warn' }[];
+  raised?: string;
+  recommend: string;
   suggestions: string[];
+  /* what the agent read before it raised this */
+  sources: Source[];
 };
 
 export const RISK_ATTENTION: RiskItem[] = [
@@ -38,6 +47,22 @@ export const RISK_ATTENTION: RiskItem[] = [
       { k: 'Single-name cap', v: '5.0%' },
     ],
     approve: 'Open impact preview',
+    stats: [
+      { k: 'Day move', v: '+4.2%', tone: 'up' },
+      { k: 'Past the fit by', v: '3.8σ', tone: 'warn' },
+      { k: 'Over the cap by', v: '1.4pts', tone: 'down' },
+    ],
+    raised:
+      'The move sits outside the window the model was fitted on, so the daily number cannot be trusted for this name until it is refitted. The position breach is separate and binds on its own.',
+    recommend:
+      'Take NVDA back to the 5.0% single-name cap and no further, roughly 2,700 shares worked over the afternoon. Refit the VaR model on the last sixty sessions before the next run so the daily number stops flagging the same move.',
+    sources: [
+      { label: 'var-daily (repo)', kind: 'repo' },
+      { label: 'Single-day move test, 09:42', kind: 'sheet' },
+      { label: 'Position file — consolidated', kind: 'sheet' },
+      { label: 'Risk limits — mandate', kind: 'doc' },
+      { label: 'Market data feed', kind: 'feed' },
+    ],
     suggestions: [
       'Trim only as far as the single-name cap requires',
       'Replay the book against the 2020 liquidity shock first',
@@ -57,6 +82,21 @@ export const RISK_ATTENTION: RiskItem[] = [
       { k: 'Rule', v: 'Restricted list' },
     ],
     approve: 'Approve exception',
+    stats: [
+      { k: 'Notional', v: '$4.2M' },
+      { k: 'Proposed size', v: '2.0%' },
+      { k: 'Open exceptions', v: '1', tone: 'warn' },
+    ],
+    raised:
+      'A restricted-list block is a hard rule, so no agent can release it. The order has been sitting unfilled since 11:22 and needs a decision from risk rather than a retry.',
+    recommend:
+      'Approve the exception capped at 1.0% and expire it at the close, with a compliance note attached to the order. Anything larger sits inside the disclosure threshold and should wait for legal to confirm the advisory mandate scope.',
+    sources: [
+      { label: 'Restricted list, today 06:40', kind: 'sheet' },
+      { label: 'Advisory mandate — signed', kind: 'doc' },
+      { label: 'Order T-90391 audit trail', kind: 'sheet' },
+      { label: 'Compliance thread — PLTR', kind: 'chat' },
+    ],
     suggestions: [
       'Cap the exception at 1.0% and expire it at the close',
       'Approve for one session only, with a compliance note attached',
@@ -76,6 +116,22 @@ export const RISK_ATTENTION: RiskItem[] = [
       { k: 'Impact', v: '17 positions' },
     ],
     approve: 'Approve increase',
+    stats: [
+      { k: 'Current limit', v: '25%' },
+      { k: 'Requested', v: '28%', tone: 'warn' },
+      { k: 'Positions affected', v: '17' },
+    ],
+    raised:
+      'The request would take technology three points past where the mandate was last reviewed. Nothing breaches today, so this is a judgement about headroom rather than a breach to clear.',
+    recommend:
+      'Approve 26.5% rather than 28% and set it to be reviewed again in a month. That covers the seventeen positions already close to the line without committing the book to a larger factor bet before the next print.',
+    sources: [
+      { label: 'Sector exposure run, 08:10', kind: 'sheet' },
+      { label: 'Risk limits — mandate', kind: 'doc' },
+      { label: 'Factor decomposition', kind: 'sheet' },
+      { label: 'Team drive — Q3 limits', kind: 'drive' },
+      { label: 'attribution (repo)', kind: 'repo' },
+    ],
     suggestions: [
       'Approve 26.5% instead and review again in a month',
       'Approve in full but tighten the single-name cap to 8%',

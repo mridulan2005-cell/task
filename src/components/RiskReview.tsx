@@ -310,7 +310,7 @@ function RiskCard({
       </div>
 
       <div className="bench-chart">
-        <LineChart labels={labels} series={series} height={176} format={fmt} formatAxis={fmt} xTicks={6} />
+        <LineChart labels={labels} series={series} height={176} format={fmt} formatAxis={fmt} xTicks={6} name="Risk review" />
       </div>
 
       <div className="bench-params">

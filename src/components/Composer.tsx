@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { Chevron, Edge, FileText, Plug, Plus, Send, Upload, X } from './Icons';
+import { Chevron, Clock, Edge, FileText, Plug, Plus, Repeat, Send, Upload, X } from './Icons';
 import { EDGES, matchEdges } from '../data/edges';
 import type { EdgeSkill } from '../data/edges';
+import { DAYS, scheduleLabel } from '../data/tasks';
+import type { Repeat as RepeatKind, Schedule } from '../data/tasks';
 
 export type Attachment = {
   id: string;
@@ -23,13 +25,31 @@ type Props = {
   onAttach: (a: Attachment[]) => void;
   edge: EdgeSkill | null;
   onEdge: (e: EdgeSkill | null) => void;
+  /* The clock only belongs to tasks, because only a task can run again. */
+  clock?: boolean;
+  schedule?: Schedule | null;
+  onSchedule?: (s: Schedule | null) => void;
 };
 
 let fileSeq = 0;
 
-export default function Composer({ value, onChange, onSend, placeholder, attachments, onDetach, onAttach, edge, onEdge }: Props) {
+export default function Composer({
+  value,
+  onChange,
+  onSend,
+  placeholder,
+  attachments,
+  onDetach,
+  onAttach,
+  edge,
+  onEdge,
+  clock = false,
+  schedule = null,
+  onSchedule,
+}: Props) {
   const [menu, setMenu] = useState(false);
   const [edgesOpen, setEdgesOpen] = useState(false);
+  const [clockOpen, setClockOpen] = useState(false);
   const wrap = useRef<HTMLDivElement>(null);
   const picker = useRef<HTMLInputElement>(null);
 
@@ -38,7 +58,7 @@ export default function Composer({ value, onChange, onSend, placeholder, attachm
   const slashHits = slash === null ? [] : matchEdges(slash);
 
   useEffect(() => {
-    if (!menu) return;
+    if (!menu && !clockOpen) return;
     function away(e: MouseEvent) {
       if (!wrap.current?.contains(e.target as Node)) shut();
     }
@@ -51,11 +71,12 @@ export default function Composer({ value, onChange, onSend, placeholder, attachm
       document.removeEventListener('mousedown', away);
       document.removeEventListener('keydown', esc);
     };
-  }, [menu]);
+  }, [menu, clockOpen]);
 
   function shut() {
     setMenu(false);
     setEdgesOpen(false);
+    setClockOpen(false);
   }
 
   function pickEdge(e: EdgeSkill) {
@@ -79,8 +100,16 @@ export default function Composer({ value, onChange, onSend, placeholder, attachm
 
   return (
     <div className="ai-compose" ref={wrap}>
-      {(attachments.length > 0 || edge) && (
+      {(attachments.length > 0 || edge || schedule) && (
         <div className="cmp-tags">
+          {schedule && (
+            <button className="cmp-sched" onClick={() => onSchedule?.(null)} data-tip="Drop the schedule">
+              <Clock size={13} />
+              {scheduleLabel(schedule)}
+              <X size={11} />
+            </button>
+          )}
+
           {edge && (
             <button className="cmp-edge" onClick={() => onEdge(null)} data-tip={edge.hint}>
               <Edge size={13} />
@@ -123,12 +152,32 @@ export default function Composer({ value, onChange, onSend, placeholder, attachm
           placeholder={placeholder}
         />
 
+        {clock && (
+          <button
+            className={`ai-clock ${clockOpen || schedule ? 'is-on' : ''}`}
+            onClick={() => setClockOpen(!clockOpen)}
+            title="Schedule this task"
+          >
+            <Clock size={15} />
+          </button>
+        )}
+
         <button className="ai-send" onClick={onSend} disabled={!value.trim()} title="Send">
           <Send />
         </button>
       </div>
 
       <input ref={picker} type="file" multiple hidden onChange={(e) => files(e.target.files)} />
+
+      {clockOpen && (
+        <ScheduleMenu
+          schedule={schedule}
+          onPick={(s) => {
+            onSchedule?.(s);
+            setClockOpen(false);
+          }}
+        />
+      )}
 
       {menu && (
         <div className="cmp-menu">
@@ -169,6 +218,59 @@ export default function Composer({ value, onChange, onSend, placeholder, attachm
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+/* Scheduling is the whole difference between a task and a question, so the
+   clock opens onto the two decisions that matter and nothing else: how often,
+   and at what time. */
+function ScheduleMenu({ schedule, onPick }: { schedule: Schedule | null; onPick: (s: Schedule | null) => void }) {
+  const [repeat, setRepeat] = useState<RepeatKind>(schedule?.repeat ?? 'daily');
+  const [time, setTime] = useState(schedule?.time ?? '07:30');
+  const [day, setDay] = useState(schedule?.day ?? DAYS[0]);
+
+  return (
+    <div className="cmp-menu is-clock">
+      <div className="sch-h">
+        <Repeat size={13} />
+        Schedule task
+      </div>
+
+      <div className="sch-seg">
+        {(['once', 'daily', 'weekly'] as RepeatKind[]).map((r) => (
+          <button key={r} className={repeat === r ? 'is-on' : ''} onClick={() => setRepeat(r)}>
+            {r === 'once' ? 'Once' : r === 'daily' ? 'Daily' : 'Weekly'}
+          </button>
+        ))}
+      </div>
+
+      {repeat === 'weekly' && (
+        <label className="sch-field">
+          On
+          <select value={day} onChange={(e) => setDay(e.target.value)}>
+            {DAYS.map((d) => (
+              <option key={d}>{d}</option>
+            ))}
+          </select>
+        </label>
+      )}
+
+      <label className="sch-field">
+        At
+        <input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+      </label>
+
+      <div className="sch-acts">
+        <button className="btn-dark" onClick={() => onPick({ repeat, time, day: repeat === 'weekly' ? day : undefined })}>
+          {schedule ? 'Update' : 'Schedule'}
+        </button>
+        {schedule && (
+          <button className="btn-quiet" onClick={() => onPick(null)}>
+            Clear
+          </button>
+        )}
+      </div>
     </div>
   );
 }

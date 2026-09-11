@@ -94,7 +94,7 @@ export function GraphLeft({
           </div>
         </div>
 
-        <LineChart labels={labels} series={series} height={142} format={dollars} formatAxis={dollarsAxis} xTicks={4} />
+        <LineChart labels={labels} series={series} height={142} format={dollars} formatAxis={dollarsAxis} xTicks={4} name="Model graph" />
 
         <span className="bench-window in-graph">
           <Calendar size={12} />

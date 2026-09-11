@@ -1,16 +1,15 @@
 import { useEffect, useState } from 'react';
 import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
-import PmDashboard from './components/PmDashboard';
+import Dashboard from './components/Dashboard';
 import AiPanel from './components/AiPanel';
-import AnalystWorkspace from './components/AnalystWorkspace';
 import ModelTestbox from './components/ModelTestbox';
-import RiskWorkspace from './components/RiskWorkspace';
-import TraderDashboard from './components/TraderDashboard';
+import AnalystWorkspace from './components/AnalystWorkspace';
 import AgentsView from './components/AgentsView';
 import RiskReview from './components/RiskReview';
 import RiskDoc from './components/RiskDoc';
 import SelectionAsk from './components/SelectionAsk';
+import { RegionsProvider } from './components/Regions';
 import { answerFor, clockNow } from './data/ai';
 import type { AiContext, AiTask } from './data/ai';
 import type { Role } from './components/TopBar';
@@ -32,16 +31,21 @@ export default function App() {
   const [graphCrumb, setGraphCrumb] = useState<string | null>(null);
   const [tabs, setTabs] = useState([{ id: 'w1', label: 'My workspace' }]);
   const [activeTab, setActiveTab] = useState('w1');
+  /* The analyst's tabs are not saved workspaces; they are the two surfaces
+     that desk works on, and the top bar is the switch between them. */
+  const [deskTab, setDeskTab] = useState<'dash' | 'work'>(analystLink ? 'work' : 'dash');
   const [tasks, setTasks] = useState<AiTask[]>([]);
   const [context, setContext] = useState<AiContext | null>(null);
   const [doc, setDoc] = useState<string[] | null>(null);
+  /* the widget catalogue, opened by Create in the rail or from the dashboard */
+  const [palette, setPalette] = useState(false);
 
   /* A question asked from a selection runs in the background. Nothing steals
      focus; the copilot panel carries the only signal until it is read. */
   function ask(quote: string, question: string) {
     const id = `t${taskSeq++}`;
-    const { answer, sources, seconds } = answerFor(question, quote);
-    setTasks((prev) => [{ id, quote, question, state: 'working', asked: clockNow(), seconds, answer, sources }, ...prev]);
+    const { answer, sources, seconds, figure } = answerFor(question, quote);
+    setTasks((prev) => [{ id, quote, question, state: 'working', asked: clockNow(), seconds, answer, sources, figure }, ...prev]);
     window.setTimeout(
       () => setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, state: t.state === 'working' ? 'ready' : t.state } : t))),
       seconds * 1000,
@@ -66,6 +70,24 @@ export default function App() {
     setCollapsed(r === 'analyst');
   }
 
+  /* Opening the surface a record points at, from the agents view or from a
+     line in the decision log. */
+  function go(r: Role, v?: 'testbox') {
+    setNav('dashboard');
+    setRole(r);
+    setView(v ?? 'work');
+    setGraphCrumb(null);
+    setCollapsed(r === 'analyst');
+  }
+
+  /* Create builds the dashboard. It takes you back to it first, so the
+     catalogue always opens over the thing it is adding to. */
+  function create() {
+    setNav('dashboard');
+    setView('work');
+    setPalette(true);
+  }
+
   function newTab() {
     const id = `w${seq++}`;
     setTabs([...tabs, { id, label: `Workspace ${tabs.length + 1}` }]);
@@ -78,17 +100,38 @@ export default function App() {
     if (activeTab === id) setActiveTab(next[next.length - 1].id);
   }
 
+  /* The analyst works across two surfaces, so its tabs name them. Every other
+     desk keeps the saved workspaces it had. */
+  const desk = role === 'analyst';
+  const deskTabs = [
+    { id: 'dash', label: 'Dashboard' },
+    { id: 'work', label: 'Workspace' },
+  ];
+  /* the idea hub, open as its own surface rather than as a widget */
+  const onHub = desk && view === 'work' && deskTab === 'work';
+
+  /* Sections dragged out of the charts live above every surface, so one
+     question can carry a stretch of two different visualisations. */
   return (
+    <RegionsProvider>
     <div className={`shell role-${role} ${collapsed ? 'nav-collapsed' : ''}`}>
-      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} active={nav} onNavigate={setNav} role={role} />
+      <Sidebar
+        collapsed={collapsed}
+        onToggle={() => setCollapsed(!collapsed)}
+        active={nav}
+        onNavigate={setNav}
+        role={role}
+        onCreate={create}
+      />
 
       <div className="frame">
         <TopBar
-          tabs={tabs}
-          activeTab={activeTab}
-          onTab={setActiveTab}
+          tabs={desk ? deskTabs : tabs}
+          activeTab={desk ? deskTab : activeTab}
+          onTab={(id) => (desk ? setDeskTab(id as 'dash' | 'work') : setActiveTab(id))}
           onCloseTab={closeTab}
           onNewTab={newTab}
+          switcher={desk}
           role={role}
           onRole={switchRole}
           crumb={nav !== 'agents' && view === 'testbox' ? (role === 'risk' ? 'Risk review' : 'Model testbox') : undefined}
@@ -104,28 +147,28 @@ export default function App() {
             <AgentsView
               context={context}
               onContext={setContext}
-              onGo={(r, v) => {
-                setNav('dashboard');
-                setRole(r);
-                setView(v ?? 'work');
-                setGraphCrumb(null);
-                setCollapsed(r === 'analyst');
-              }}
+              onGo={go}
             />
-          ) : role === 'risk' ? (
-            view === 'testbox' ? (
-              <RiskReview onContext={setContext} />
-            ) : (
-              <RiskWorkspace />
-            )
-          ) : role === 'trader' ? (
-            <TraderDashboard />
-          ) : role === 'pm' ? (
-            <PmDashboard context={context} onContext={setContext} />
-          ) : view === 'testbox' ? (
+          ) : role === 'risk' && view === 'testbox' ? (
+            <RiskReview onContext={setContext} />
+          ) : role === 'analyst' && view === 'testbox' ? (
             <ModelTestbox onGraph={setGraphCrumb} onContext={setContext} />
-          ) : (
+          ) : onHub ? (
+            /* the idea hub as a surface of its own, not a card on a board */
             <AnalystWorkspace onContext={setContext} />
+          ) : (
+            /* Every desk opens on the same thing: widgets it arranged itself,
+               starting from the template its role was given. */
+            <Dashboard
+              key={role}
+              role={role}
+              context={context}
+              onContext={setContext}
+              paletteOpen={palette}
+              onPalette={setPalette}
+              onGo={go}
+              onWorkspace={() => setDeskTab('work')}
+            />
           )}
         </div>
       </div>
@@ -135,17 +178,27 @@ export default function App() {
         nudge={nudge}
         role={role}
         context={context}
-        mode={role === 'analyst' && view === 'work' ? 'templates' : 'chat'}
+        mode={onHub ? 'templates' : 'chat'}
         onClearContext={() => setContext(null)}
         onContext={setContext}
         onAsk={ask}
         onCreateModel={() => setView('testbox')}
         onDoc={setDoc}
+        onNewChat={() => {
+          setTasks([]);
+          setContext(null);
+        }}
+        onOpenWorkspace={() => {
+          setNav('dashboard');
+          setView('work');
+          setDeskTab('work');
+        }}
       />
 
       <SelectionAsk onAsk={ask} />
 
       {doc && <RiskDoc paras={doc} onClose={() => setDoc(null)} />}
     </div>
+    </RegionsProvider>
   );
 }

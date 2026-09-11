@@ -9,7 +9,6 @@ export type Idea = {
   thesis: string;
   angle: string;
   state: IdeaState;
-  conviction: number;
   sources: number;
   age: string;
   origin: string;
@@ -23,7 +22,6 @@ export const IDEAS: Idea[] = [
     thesis: 'The power and cooling retrofit cycle is running ahead of the reported backlog.',
     angle: 'Data centre power',
     state: 'new',
-    conviction: 71,
     sources: 46,
     age: '12m',
     origin: 'Screener agent',
@@ -34,8 +32,7 @@ export const IDEAS: Idea[] = [
     name: 'Broadcom Inc',
     thesis: 'Custom silicon mix shift lifts gross margin a full point ahead of consensus.',
     angle: 'Mix shift',
-    state: 'open',
-    conviction: 64,
+    state: 'new',
     sources: 31,
     age: '2h',
     origin: 'News agent',
@@ -47,7 +44,6 @@ export const IDEAS: Idea[] = [
     thesis: 'The rate path repricing overshoots what the regulated base actually earns.',
     angle: 'Rate sensitivity',
     state: 'open',
-    conviction: 52,
     sources: 18,
     age: '1d',
     origin: 'You',
@@ -59,7 +55,6 @@ export const IDEAS: Idea[] = [
     thesis: 'Used inventory clearing through the channel marks the trough in orders.',
     angle: 'Channel inventory',
     state: 'testing',
-    conviction: 58,
     sources: 24,
     age: '3d',
     origin: 'Screener agent',
@@ -71,7 +66,6 @@ export const IDEAS: Idea[] = [
     thesis: 'Refining spreads normalise faster than the pair against XOM implies.',
     angle: 'Pair trade',
     state: 'parked',
-    conviction: 38,
     sources: 12,
     age: '5d',
     origin: 'You',

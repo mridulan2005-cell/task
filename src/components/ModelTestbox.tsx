@@ -6,7 +6,7 @@ import GraphCanvas, { GraphLeft } from './ModelGraphView';
 import { Handle, useColumns } from './Resizer';
 import { MODELS, MODEL_RANGES, defaults, modelLabels, modelPath, outcome, windowOf } from '../data/testbox';
 import type { ModelRange, Param, TestModel } from '../data/testbox';
-import { Box, Calendar, Check, Chevron, Nodes, Plus, Spark } from './Icons';
+import { Box, Calendar, Check, Nodes, Plus, Spark } from './Icons';
 import type { AiContext } from '../data/ai';
 
 type State = { params: Param[]; values: Record<string, number>; range: ModelRange };
@@ -243,7 +243,7 @@ function ModelCard({
       </div>
 
       <div className="bench-chart">
-        <LineChart labels={labels} series={series} height={176} format={dollars} formatAxis={dollarsAxis} xTicks={6} />
+        <LineChart labels={labels} series={series} height={176} format={dollars} formatAxis={dollarsAxis} xTicks={6} name="Model testbox" />
       </div>
 
       <div className="bench-params">

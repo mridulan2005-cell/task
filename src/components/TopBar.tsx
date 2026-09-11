@@ -21,9 +21,12 @@ type Props = {
   crumb?: string;
   crumbLast?: string;
   onCrumbHome?: () => void;
+  /* On a desk whose tabs switch between surfaces rather than between saved
+     workspaces, nothing can be added or closed: the set is the desk. */
+  switcher?: boolean;
 };
 
-export default function TopBar({ tabs, activeTab, onTab, onCloseTab, onNewTab, role, onRole, crumb, crumbLast, onCrumbHome }: Props) {
+export default function TopBar({ tabs, activeTab, onTab, onCloseTab, onNewTab, role, onRole, crumb, crumbLast, onCrumbHome, switcher }: Props) {
   const [menu, setMenu] = useState(false);
   const wrap = useRef<HTMLDivElement>(null);
 
@@ -61,7 +64,7 @@ export default function TopBar({ tabs, activeTab, onTab, onCloseTab, onNewTab, r
           tabs.map((t, i) => (
           <div key={t.id} className={`wtab ${t.id === activeTab ? 'is-on' : ''}`} onClick={() => onTab(t.id)}>
             <span>{t.label}</span>
-            {i === 0 ? (
+            {switcher ? null : i === 0 ? (
               <Lock size={12} className="wtab-lock" />
             ) : (
               <button
@@ -77,7 +80,7 @@ export default function TopBar({ tabs, activeTab, onTab, onCloseTab, onNewTab, r
             )}
             </div>
           ))}
-        {!crumb && (
+        {!crumb && !switcher && (
           <button className="wtab-add" onClick={onNewTab} title="New workspace">
             <Plus size={14} />
           </button>

@@ -318,3 +318,146 @@ export const Corner = ({ size = 14, className }: P) => (
     <path d="M5 5v8a3 3 0 0 0 3 3h11M15 12l4 4-4 4" />
   </svg>
 );
+
+/* ---------------- dashboard widgets ---------------- */
+
+/* The grip a widget is dragged by. Dots, so it reads as a handle and not a
+   menu the way three dots would. */
+export const Grip = ({ size = 14, className }: P) => (
+  <svg {...base(size, className)} fill="currentColor" stroke="none">
+    <circle cx="9" cy="6" r="1.5" />
+    <circle cx="15" cy="6" r="1.5" />
+    <circle cx="9" cy="12" r="1.5" />
+    <circle cx="15" cy="12" r="1.5" />
+    <circle cx="9" cy="18" r="1.5" />
+    <circle cx="15" cy="18" r="1.5" />
+  </svg>
+);
+
+/* The three widths, drawn as the share of a row each one takes. */
+export const SpanThird = ({ size = 14, className }: P) => (
+  <svg {...base(size, className)}>
+    <rect x="3.5" y="6.5" width="5" height="11" rx="1.4" fill="currentColor" stroke="none" />
+    <rect x="10" y="6.5" width="5" height="11" rx="1.4" opacity="0.32" />
+    <rect x="16.5" y="6.5" width="4" height="11" rx="1.4" opacity="0.32" />
+  </svg>
+);
+
+export const SpanHalf = ({ size = 14, className }: P) => (
+  <svg {...base(size, className)}>
+    <rect x="3.5" y="6.5" width="8.5" height="11" rx="1.4" fill="currentColor" stroke="none" />
+    <rect x="13.5" y="6.5" width="7" height="11" rx="1.4" opacity="0.32" />
+  </svg>
+);
+
+export const SpanFull = ({ size = 14, className }: P) => (
+  <svg {...base(size, className)}>
+    <rect x="3.5" y="6.5" width="17" height="11" rx="1.4" fill="currentColor" stroke="none" />
+  </svg>
+);
+
+/* Layout: what the customise toggle carries. */
+export const Layout = ({ size = 15, className }: P) => (
+  <svg {...base(size, className)}>
+    <rect x="3.5" y="3.5" width="17" height="17" rx="2.4" />
+    <path d="M3.5 9.5h17M11 9.5v11" />
+  </svg>
+);
+
+/* Undo: reset a layout back to the desk template. */
+export const Undo = ({ size = 14, className }: P) => (
+  <svg {...base(size, className)}>
+    <path d="M4.5 9.5h9.8a5 5 0 0 1 0 10H8.2" />
+    <path d="M8 5 4.2 9.5 8 14" />
+  </svg>
+);
+
+/* ---------------- chat and tasks ---------------- */
+
+export const Chat = ({ size = 16, className }: P) => (
+  <svg {...base(size, className)}>
+    <path d="M20.4 11.6a8 8 0 0 1-8.6 8 8.6 8.6 0 0 1-3.7-.9L3.6 20l1.3-4.4a8 8 0 0 1-.9-3.7 8 8 0 0 1 8-8.6 8 8 0 0 1 8.4 8.3z" />
+  </svg>
+);
+
+export const Briefcase = ({ size = 16, className }: P) => (
+  <svg {...base(size, className)}>
+    <rect x="3" y="7.6" width="18" height="12.4" rx="2.2" />
+    <path d="M8.6 7.6V6a1.9 1.9 0 0 1 1.9-1.9h3a1.9 1.9 0 0 1 1.9 1.9v1.6M3 12.6h18" />
+  </svg>
+);
+
+export const NewChat = ({ size = 16, className }: P) => (
+  <svg {...base(size, className)}>
+    <path d="M11.4 4.6H6.2A2.2 2.2 0 0 0 4 6.8v11a2.2 2.2 0 0 0 2.2 2.2h11a2.2 2.2 0 0 0 2.2-2.2v-5.2" />
+    <path d="M17.2 3.6a1.9 1.9 0 0 1 2.7 2.7L12.6 13.6l-3.4.9.9-3.4z" />
+  </svg>
+);
+
+export const History = ({ size = 16, className }: P) => (
+  <svg {...base(size, className)}>
+    <path d="M4 6.5h16M4 12h16M4 17.5h11" />
+  </svg>
+);
+
+export const Clock = ({ size = 15, className }: P) => (
+  <svg {...base(size, className)}>
+    <circle cx="12" cy="12" r="8.4" />
+    <path d="M12 7.4V12l3.1 1.9" />
+  </svg>
+);
+
+export const Repeat = ({ size = 14, className }: P) => (
+  <svg {...base(size, className)}>
+    <path d="M4.5 9.5A4.5 4.5 0 0 1 9 5h10M16.4 2.4 19.5 5l-3.1 2.6" />
+    <path d="M19.5 14.5A4.5 4.5 0 0 1 15 19H5M7.6 21.6 4.5 19l3.1-2.6" />
+  </svg>
+);
+
+/* The agent that decides rather than produces, and the record it leaves. */
+export const Scales = ({ size = 17, className }: P) => (
+  <svg {...base(size, className)}>
+    <path d="M12 4.4v15.2M7.4 19.6h9.2M4.6 7.2 12 5.8l7.4 1.4" />
+    <path d="M4.6 7.4 2 13.4a2.9 2.9 0 0 0 5.2 0zM19.4 7.4l-2.6 6a2.9 2.9 0 0 0 5.2 0z" />
+  </svg>
+);
+
+export const Ledger = ({ size = 15, className }: P) => (
+  <svg {...base(size, className)}>
+    <rect x="4" y="3.4" width="16" height="17.2" rx="2.2" />
+    <path d="M8 3.4v17.2M11 8.4h6M11 12h6M11 15.6h4" />
+  </svg>
+);
+
+/* A search with a spark on it: what an agent turned up rather than a person. */
+export const SearchAi = ({ size = 13, className }: P) => (
+  <svg {...base(size, className)}>
+    <circle cx="10.6" cy="10.6" r="6.2" />
+    <path d="M15.2 15.2 20 20" />
+    <path d="M10.6 7.4l.85 2.35 2.35.85-2.35.85-.85 2.35-.85-2.35-2.35-.85 2.35-.85z" />
+  </svg>
+);
+
+/* What the reading produced: an idea, with the spark that says an agent
+   turned it up rather than a person. */
+export const Bulb = ({ size = 19, className }: P) => (
+  <svg {...base(size, className)}>
+    <path d="M9.2 17.4a6.2 6.2 0 1 1 5.6 0v1.9a1.5 1.5 0 0 1-1.5 1.5h-2.6a1.5 1.5 0 0 1-1.5-1.5z" />
+    <path d="M9.4 17.6h5.2" />
+    <path d="M18.9 3.1l.62 1.72 1.72.62-1.72.62-.62 1.72-.62-1.72-1.72-.62 1.72-.62z" />
+  </svg>
+);
+
+export const Bars = ({ size = 16, className }: P) => (
+  <svg {...base(size, className)}>
+    <path d="M5 20V11M12 20V4.6M19 20v-6.4" />
+  </svg>
+);
+
+/* Stopping a run where it stands, which is a hold rather than a cancel. */
+export const Pause = ({ size = 13, className }: P) => (
+  <svg {...base(size, className)} fill="currentColor" stroke="none">
+    <rect x="8" y="6" width="3.2" height="12" rx="1.3" />
+    <rect x="12.8" y="6" width="3.2" height="12" rx="1.3" />
+  </svg>
+);

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { WATCHLIST } from '../data/fund';
+import { AGENTS } from '../data/agents';
 import Sparkline from './Sparkline';
 import { Agents, Chevron, Exit, Eye, Gear, Grid, Mark, Panel, Plus, Search } from './Icons';
 import type { Role } from './TopBar';
@@ -9,15 +10,19 @@ type Props = {
   onToggle: () => void;
   active: string;
   onNavigate: (key: string) => void;
+  /* the desk in the chair; the rail reads the same for each of them today */
   role: Role;
+  /* Create opens the widget catalogue over the dashboard */
+  onCreate: () => void;
 };
 
 const NAV = [
   { key: 'dashboard', label: 'Dashboard', icon: Grid },
-  { key: 'agents', label: 'Agents', icon: Agents, badge: '6' },
+  /* the badge counts the list rather than repeating a number */
+  { key: 'agents', label: 'Agents', icon: Agents, badge: String(AGENTS.length) },
 ];
 
-export default function Sidebar({ collapsed, onToggle, active, onNavigate, role }: Props) {
+export default function Sidebar({ collapsed, onToggle, active, onNavigate, onCreate }: Props) {
   const [listOpen, setListOpen] = useState(true);
   const [q, setQ] = useState('');
 
@@ -43,9 +48,9 @@ export default function Sidebar({ collapsed, onToggle, active, onNavigate, role 
         </button>
       )}
 
-      <button className={`create ${collapsed ? 'is-icon' : ''}`} title="Create">
+      <button className={`create ${collapsed ? 'is-icon' : ''}`} onClick={onCreate} title="Add a widget to your dashboard">
         <Plus size={collapsed ? 17 : 15} />
-        {!collapsed && <span>Create</span>}
+        {!collapsed && <span>Add</span>}
       </button>
 
       <nav className="rail-nav">

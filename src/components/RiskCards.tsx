@@ -13,27 +13,13 @@ import {
   SIM_MEASURES,
   simSeries,
 } from '../data/risk';
-import PortfolioCard from './PortfolioCard';
 import { Alert, ArrowOut, Check, Chevron, Spark } from './Icons';
 
-export default function RiskWorkspace() {
-  return (
-    <main className="risk">
-      <StatStrip />
-
-      <PortfolioCard />
-      <RiskState />
-      <Protection />
-      <RecentActivity />
-      <Evaluation />
-      <Simulation />
-    </main>
-  );
-}
+/* The risk desk, taken apart into cards the dashboard places on its own. */
 
 /* ---------------- stats ---------------- */
 
-function StatStrip() {
+export function RiskStats() {
   return (
     <section className="card rstats">
       {RISK_STATS.map((s) => (
@@ -53,7 +39,7 @@ function StatStrip() {
 
 /* ---------------- risk state ---------------- */
 
-function RiskState() {
+export function RiskState() {
   const max = Math.max(...EXPOSURES.map((e) => e.limit));
 
   return (
@@ -113,7 +99,7 @@ function RiskState() {
 
 /* ---------------- protection ---------------- */
 
-function Protection() {
+export function Protection() {
   const R = 52;
   const C = 2 * Math.PI * R;
   let offset = 0;
@@ -188,7 +174,7 @@ function Protection() {
 
 /* ---------------- recent activity ---------------- */
 
-function RecentActivity() {
+export function AgentActivity() {
   return (
     <section className="card ractivity">
       <header className="card-head">
@@ -218,7 +204,7 @@ function RecentActivity() {
 
 /* ---------------- evaluation ---------------- */
 
-function Evaluation() {
+export function RiskEvaluation() {
   return (
     <section className="card reval">
       <header className="card-head">
@@ -294,7 +280,7 @@ function Evaluation() {
 
 /* ---------------- simulation ---------------- */
 
-function Simulation() {
+export function RiskSimulation() {
   const [measure, setMeasure] = useState('var');
   const [picking, setPicking] = useState(false);
   const { labels, data } = useMemo(() => simSeries(), []);
@@ -354,6 +340,7 @@ function Simulation() {
         format={(v) => `${v.toFixed(2)}%`}
         formatAxis={(v) => `${v.toFixed(1)}%`}
         xTicks={5}
+        name={m.label}
       />
     </section>
   );

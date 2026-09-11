@@ -143,7 +143,7 @@ export default function PortfolioCard() {
         )}
       </div>
 
-      <LineChart labels={labels} series={lines} height={252} format={money} formatAxis={moneyAxis} />
+      <LineChart labels={labels} series={lines} height={252} format={money} formatAxis={moneyAxis} name="Portfolio performance" />
 
     </section>
   );

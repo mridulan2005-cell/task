@@ -1,9 +1,21 @@
-import { useState } from 'react';
-import { AGENTS, AGENT_EVENTS, STATE_LABEL, agentOf } from '../data/agents';
-import type { Agent, AgentEvent, EventState } from '../data/agents';
-import { Agents, ArrowOut, FileDash, Left, Plus, Search, SrcDoc, SrcSheet } from './Icons';
+import { useMemo, useState } from 'react';
+import type { ReactElement } from 'react';
+import {
+  AGENTS,
+  AGENT_EVENTS,
+  DAYS,
+  LIVE_RUNS,
+  byNewest,
+  agentOf,
+  perfOf,
+} from '../data/agents';
+import type { Agent, AgentEvent, AgentIcon } from '../data/agents';
+import { ArrowOut, Book, Chevron, FileDash, Fx, Left, Lock, Pause, Plus, Scales, Search, Send, SrcDoc, SrcSheet, Target } from './Icons';
 import type { Role } from './TopBar';
 import type { AiContext } from '../data/ai';
+import AgentStats from './AgentStats';
+import AgentActivity, { contextFor } from './AgentActivity';
+import type { Filters } from './AgentActivity';
 
 type Props = {
   context: AiContext | null;
@@ -12,14 +24,54 @@ type Props = {
   onGo: (role: Role, view?: 'testbox') => void;
 };
 
-const TABS: EventState[] = ['doing', 'pending', 'done'];
+/* One glyph per agent, picked for the work rather than for variety: the
+   screener searches, compliance locks, the manager weighs. */
+const AGENT_GLYPH: Record<AgentIcon, (p: { size?: number }) => ReactElement> = {
+  decide: Scales,
+  screen: Search,
+  research: Book,
+  model: Fx,
+  risk: Target,
+  compliance: Lock,
+  execute: Send,
+};
+
+const WHOLE: Filters = { state: 'all', who: null, from: DAYS[DAYS.length - 1], to: DAYS[0], outcome: null };
 
 export default function AgentsView({ context, onContext, onGo }: Props) {
   const [open, setOpen] = useState<string | null>(null);
   const [q, setQ] = useState('');
+  const [autonomy, setAutonomy] = useState<string | null>(null);
+  const [filters, setFilters] = useState<Filters>(WHOLE);
 
   const agent = open ? agentOf(open) : null;
-  const rows = AGENTS.filter((a) => `${a.name} ${a.sub}`.toLowerCase().includes(q.toLowerCase()));
+
+  const rows = AGENTS.filter((a) => {
+    const hit = `${a.name} ${a.sub}`.toLowerCase().includes(q.toLowerCase());
+    return hit && (!autonomy || a.autonomy === autonomy);
+  });
+
+  /* Opening an agent pins the whole page to it: the figures, the log and the
+     live work all narrow together rather than one of them lagging. */
+  const scoped = useMemo(
+    () => AGENT_EVENTS.filter((e) => (agent ? e.agent === agent.id : true)),
+    [agent],
+  );
+
+  const logged = useMemo(
+    () =>
+      scoped
+        .filter((e) => {
+          if (filters.state !== 'all' && e.state !== filters.state) return false;
+          if (!agent && filters.who && e.agent !== filters.who) return false;
+          if (filters.outcome && e.outcome !== filters.outcome) return false;
+          return e.day >= filters.from && e.day <= filters.to;
+        })
+        .sort(byNewest),
+    [scoped, filters, agent],
+  );
+
+  const live = scoped.filter((e) => e.state === 'doing');
 
   return (
     <main className="canvas agents">
@@ -40,38 +92,182 @@ export default function AgentsView({ context, onContext, onGo }: Props) {
         )}
       </div>
 
+      <AgentStats
+        agent={agent}
+        live={live.length}
+        logged={logged.length}
+        outcome={filters.outcome}
+        onOutcome={(outcome) => setFilters({ ...filters, outcome })}
+        autonomy={autonomy}
+        onAutonomy={setAutonomy}
+      />
+
       {agent ? (
-        <AgentDetail agent={agent} onBack={() => setOpen(null)} />
+        <AgentDetail agent={agent} live={live} onBack={() => setOpen(null)} onGo={onGo} onContext={onContext} />
       ) : (
-        <ul className="ag-list">
-          {rows.map((a) => (
-            <li key={a.id}>
-              <button className="ag-card" onClick={() => setOpen(a.id)}>
-                <span className="ag-ic">
-                  <Agents size={17} />
-                </span>
-                <span className="ag-c">
-                  <span className="ag-n">{a.name}</span>
-                  <span className="ag-s">{a.sub}</span>
-                </span>
-                <span className="ag-meta">
-                  <span className={`ag-auto a-${a.autonomy.toLowerCase()}`}>{a.autonomy}</span>
-                  <span className="ag-runs">{a.runs}</span>
-                </span>
-              </button>
-            </li>
-          ))}
-          {rows.length === 0 && (
-            <li className="empty">
-              <strong>No agent matches.</strong>
-              <span>Try a different word, or add one.</span>
-            </li>
-          )}
-        </ul>
+        <section className="ag-roster">
+          <header className="ag-roster-h">
+            <h3>Agents</h3>
+            <span>
+              {rows.length === AGENTS.length ? `${AGENTS.length} on the desk` : `${rows.length} of ${AGENTS.length}`}
+              {autonomy && ` · ${autonomy.toLowerCase()}`}
+            </span>
+          </header>
+
+          <ul className="ag-list">
+            {rows.map((a) => (
+              <AgentRow
+                key={a.id}
+                agent={a}
+                live={AGENT_EVENTS.filter((e) => e.agent === a.id && e.state === 'doing')}
+                onOpen={() => setOpen(a.id)}
+                onPause={(e) => onContext(contextFor(e))}
+              />
+            ))}
+            {rows.length === 0 && (
+              <li className="empty">
+                <strong>No agent matches.</strong>
+                <span>Try a different word, or clear the autonomy filter.</span>
+              </li>
+            )}
+          </ul>
+        </section>
       )}
 
-      <Activity agent={agent} context={context} onContext={onContext} onGo={onGo} />
+      <AgentActivity
+        agent={agent}
+        scoped={scoped}
+        rows={logged}
+        filters={filters}
+        onFilters={setFilters}
+        context={context}
+        onContext={onContext}
+        onGo={onGo}
+      />
     </main>
+  );
+}
+
+/* ---------------- one line of the roster ---------------- */
+
+function AgentRow({
+  agent,
+  live,
+  onOpen,
+  onPause,
+}: {
+  agent: Agent;
+  live: AgentEvent[];
+  onOpen: () => void;
+  onPause: (e: AgentEvent) => void;
+}) {
+  const Glyph = AGENT_GLYPH[agent.icon];
+  const perf = perfOf(agent.id);
+
+  return (
+    <li>
+      {/* The row opens the agent, but the live tag carries a control of its
+          own, so the click target is a layer under the row rather than the
+          row itself: a button inside a button is not a thing. */}
+      <div className="ag-card">
+        <button className="ag-open" onClick={onOpen} aria-label={`Open ${agent.name}`} />
+
+        <span className={`ag-ic i-${agent.icon}`}>
+          <Glyph size={17} />
+        </span>
+
+        <span className="ag-c">
+          <span className="ag-n">
+            {agent.name}
+            {live.length > 0 && (
+              <span className="ag-now" tabIndex={0}>
+                <i />
+                {live.length} running
+                <LiveTip agent={agent} live={live} onPause={onPause} />
+              </span>
+            )}
+          </span>
+          <span className="ag-s">{agent.sub}</span>
+        </span>
+
+        {/* Seven sessions of work and the rate it came out clean: enough to
+            see a trend break from the roster, not enough to read as a chart
+            asking to be studied. */}
+        <span className="ag-trend" title={`Runs per session: ${perf.recent.join(', ')}`}>
+          <Bars values={perf.recent} />
+        </span>
+
+        <span className="ag-rate">
+          <b>{perf.clean}%</b>
+          <span>clean</span>
+        </span>
+
+        <span className="ag-meta">
+          <span className={`ag-auto a-${agent.autonomy.toLowerCase()}`}>{agent.autonomy}</span>
+          <span className="ag-runs">{agent.runs}</span>
+        </span>
+
+        <Chevron size={14} className="ag-go" />
+      </div>
+    </li>
+  );
+}
+
+/* What the agent is doing, without opening it. One card per run in flight:
+   where the work is, which instruction it is on, and the one control worth
+   having from a list, which is stopping it. */
+function LiveTip({
+  agent,
+  live,
+  onPause,
+}: {
+  agent: Agent;
+  live: AgentEvent[];
+  onPause: (e: AgentEvent) => void;
+}) {
+  return (
+    <span className="ag-tip" role="tooltip">
+      <span className="ag-tip-k">
+        {agent.name} is on {live.length === 1 ? 'one run' : `${live.length} runs`}
+      </span>
+
+      {live.map((e) => {
+        const run = LIVE_RUNS[e.id];
+        return (
+          <span className="ag-tip-row" key={e.id}>
+            <span className="ag-tip-c">
+              <b>{e.title}</b>
+              <em>{run ? `Instruction ${run.at} of ${agent.steps.length} · ${run.note}` : e.sub}</em>
+              <small>
+                On {e.where.label} · {e.time}
+              </small>
+            </span>
+            <button
+              className="ag-pause"
+              onClick={(ev) => {
+                ev.stopPropagation();
+                onPause(e);
+              }}
+              title={`Pause this run of ${agent.name}`}
+              aria-label={`Pause ${e.title}`}
+            >
+              <Pause size={13} />
+            </button>
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
+function Bars({ values }: { values: number[] }) {
+  const hi = Math.max(...values);
+  return (
+    <span className="ag-bars" aria-hidden="true">
+      {values.map((v, i) => (
+        <i key={i} style={{ height: `${Math.max((v / hi) * 100, 12)}%` }} className={i === values.length - 1 ? 'is-last' : ''} />
+      ))}
+    </span>
   );
 }
 
@@ -83,8 +279,24 @@ const FILE_ICON = {
   sheet: SrcSheet,
 };
 
-function AgentDetail({ agent, onBack }: { agent: Agent; onBack: () => void }) {
+function AgentDetail({
+  agent,
+  live,
+  onBack,
+  onGo,
+  onContext,
+}: {
+  agent: Agent;
+  live: AgentEvent[];
+  onBack: () => void;
+  onGo: (role: Role, view?: 'testbox') => void;
+  onContext: (c: AiContext | null) => void;
+}) {
   const [tab, setTab] = useState<'steps' | 'files'>('steps');
+
+  /* Which instruction the agent is on, so the list of instructions can say
+     so itself rather than making someone hold a number in their head. */
+  const onStep = live.map((e) => LIVE_RUNS[e.id]?.at).filter(Boolean) as number[];
 
   return (
     <section className="ag-detail">
@@ -94,12 +306,80 @@ function AgentDetail({ agent, onBack }: { agent: Agent; onBack: () => void }) {
       </button>
 
       <div className="ag-head">
-        <h2>{agent.name}</h2>
-        <p>{agent.sub}</p>
+        <span className={`ag-ic i-${agent.icon}`}>{(() => {
+          const Glyph = AGENT_GLYPH[agent.icon];
+          return <Glyph size={17} />;
+        })()}</span>
+        <div>
+          <h2>{agent.name}</h2>
+          <p>{agent.sub}</p>
+        </div>
+        <span className={`ag-auto a-${agent.autonomy.toLowerCase()}`}>{agent.autonomy}</span>
       </div>
 
       <div className="block-h as-label">What it does</div>
       <p className="ag-does">{agent.does}</p>
+
+      {/* What it is doing this second, directly under what it is for. The
+          two questions arrive together, so the answers do. */}
+      <div className="block-h as-label">
+        Doing right now
+        {live.length > 0 && <em className="ag-live-n">{live.length}</em>}
+      </div>
+
+      {live.length === 0 ? (
+        <div className="ag-idle">
+          <span className="ag-dot s-done" />
+          Nothing in flight. {agent.name} last finished a run today and is waiting on its next trigger.
+        </div>
+      ) : (
+        <ul className="ag-live">
+          {live.map((e) => {
+            const run = LIVE_RUNS[e.id];
+            return (
+              <li key={e.id} className="ag-live-card">
+                <header>
+                  <span className="spin tl-spin" />
+                  <div>
+                    <b>{e.title}</b>
+                    <span>{e.sub}</span>
+                  </div>
+                  <span className="ag-live-t">{e.time}</span>
+                </header>
+
+                {run && (
+                  <>
+                    <div className="ag-live-step">
+                      Instruction {run.at} of {agent.steps.length} · {run.note}
+                    </div>
+                    <div className="tl-bar">
+                      <i style={{ width: `${(run.at / agent.steps.length) * 100}%` }} />
+                    </div>
+                    <ol className="ag-live-log">
+                      {run.log.map((l) => (
+                        <li key={l.at}>
+                          <em>{l.at}</em>
+                          {l.line}
+                        </li>
+                      ))}
+                    </ol>
+                  </>
+                )}
+
+                <footer>
+                  <button className="ghost-b" onClick={() => onGo(e.where.role, e.where.view)}>
+                    Go to {e.where.label}
+                    <ArrowOut size={11} />
+                  </button>
+                  <button className="ghost-b is-stop" onClick={() => onContext(contextFor(e))}>
+                    Interrupt
+                  </button>
+                </footer>
+              </li>
+            );
+          })}
+        </ul>
+      )}
 
       <section className="card ag-inst">
         <header className="ag-inst-h">
@@ -120,12 +400,16 @@ function AgentDetail({ agent, onBack }: { agent: Agent; onBack: () => void }) {
 
         {tab === 'steps' ? (
           <ol className="ag-steps">
-            {agent.steps.map((s, i) => (
-              <li key={s}>
-                <i>{i + 1}</i>
-                {s}
-              </li>
-            ))}
+            {agent.steps.map((s, i) => {
+              const here = onStep.includes(i + 1);
+              return (
+                <li key={s} className={here ? 'is-live' : ''}>
+                  <i>{i + 1}</i>
+                  {s}
+                  {here && <span className="ag-here">on this now</span>}
+                </li>
+              );
+            })}
           </ol>
         ) : (
           <ul className="ag-files">
@@ -149,120 +433,4 @@ function AgentDetail({ agent, onBack }: { agent: Agent; onBack: () => void }) {
       </section>
     </section>
   );
-}
-
-/* ---------------- what every agent is doing ---------------- */
-
-function Activity({ agent, context, onContext, onGo }: Props & { agent: Agent | null }) {
-  const [tab, setTab] = useState<EventState>('doing');
-
-  const scoped = agent ? AGENT_EVENTS.filter((e) => e.agent === agent.id) : AGENT_EVENTS;
-  const rows = scoped.filter((e) => e.state === tab);
-
-  return (
-    <section className="card ag-act">
-      <header className="card-head">
-        <div>
-          <div className="card-title">Recent activity</div>
-          <div className="card-sub">{agent ? `Everything ${agent.name} has run today` : 'Every agent on the desk'}</div>
-        </div>
-        <div className="ag-tabs">
-          {TABS.map((t) => {
-            const n = scoped.filter((e) => e.state === t).length;
-            return (
-              <button key={t} className={`ag-tab ${tab === t ? 'is-on' : ''}`} onClick={() => setTab(t)}>
-                {STATE_LABEL[t]}
-                {n > 0 && <em>{n}</em>}
-              </button>
-            );
-          })}
-        </div>
-      </header>
-
-      <div className="ag-act-body">
-        {rows.length === 0 ? (
-          <div className="empty">
-            <strong>Nothing {STATE_LABEL[tab].toLowerCase()}.</strong>
-            <span>{agent ? `${agent.name} has nothing in this state.` : 'The desk is clear on this one.'}</span>
-          </div>
-        ) : (
-          <ul className="ag-events">
-            {rows.map((e) => (
-              <EventRow key={e.id} event={e} on={context?.id === e.id} onContext={onContext} onGo={onGo} />
-            ))}
-          </ul>
-        )}
-      </div>
-    </section>
-  );
-}
-
-function EventRow({
-  event,
-  on,
-  onContext,
-  onGo,
-}: {
-  event: AgentEvent;
-  on: boolean;
-  onContext: (c: AiContext | null) => void;
-  onGo: (role: Role, view?: 'testbox') => void;
-}) {
-  return (
-    <li className={`ag-ev s-${event.state} ${on ? 'is-on' : ''}`}>
-      <button className="ag-ev-main" onClick={() => onContext(on ? null : contextFor(event))}>
-        <span className={`ag-dot s-${event.state}`} />
-        <span className="ag-c">
-          <span className="ag-ev-t">{event.title}</span>
-          <span className="ag-ev-s">{event.sub}</span>
-        </span>
-        <span className="ag-ev-r">
-          <span className="ag-ev-by">{agentOf(event.agent).name}</span>
-          <span className="ag-ev-time">{event.time}</span>
-        </span>
-      </button>
-
-      {event.progress !== undefined && (
-        <span className="ag-ev-bar">
-          <i style={{ width: `${event.progress}%` }} />
-        </span>
-      )}
-
-      <div className="ag-ev-acts">
-        <button className="ghost-b" onClick={() => onGo(event.where.role, event.where.view)}>
-          Go to {event.where.label}
-          <ArrowOut size={11} />
-        </button>
-        {event.state !== 'done' && (
-          <button className="ghost-b is-stop" onClick={() => onContext(on ? null : contextFor(event))}>
-            Interrupt
-          </button>
-        )}
-      </div>
-    </li>
-  );
-}
-
-/* Picking an event hands it to the copilot, with the questions worth asking
-   and the one control that matters while it is still running. */
-function contextFor(e: AgentEvent): AiContext {
-  const agent = agentOf(e.agent);
-  const live = e.state !== 'done';
-
-  return {
-    id: e.id,
-    kind: 'need',
-    title: e.title,
-    sub: `${agent.name} agent · ${e.time}`,
-    questions: live
-      ? [`Why is ${agent.name} doing this?`, 'What happens if I stop it now?', `Which instruction is it on?`]
-      : [`What did ${agent.name} conclude?`, 'Which sources did it use?', 'Should anything follow from it?'],
-    ...(live
-      ? {
-          tools: [
-            { id: 'pause', label: 'Pause this activity', note: `Stops ${agent.name} where it is and holds the work` },
-          ],
-        }
-      : {}),
-  };
 }

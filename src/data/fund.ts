@@ -290,10 +290,20 @@ export function pctSeries(id: string, range: Range): Point[] {
 
 /* ---------------- metric catalogue ---------------- */
 
-export type MetricDef = { id: string; label: string; value: string; sub: string; tone?: 'up' | 'down' | 'warn' };
+export type MetricDef = {
+  id: string;
+  label: string;
+  value: string;
+  sub: string;
+  tone?: 'up' | 'down' | 'warn';
+  /* a figure with a record behind it. The number becomes a way in to the
+     record rather than the end of it. */
+  panel?: 'decisions';
+};
 
 export const METRICS: MetricDef[] = [
   { id: 'nav', label: 'Net asset value', value: '$128.43M', sub: '+12.41% YTD', tone: 'up' },
+  { id: 'decisions', label: 'Decisions today', value: '8', sub: 'By the PM agent', panel: 'decisions' },
   { id: 'risk', label: 'Risk factor', value: '0.87', sub: 'Moderate beta' },
   { id: 'day', label: 'Day P/L', value: '+$1.07M', sub: '+0.84%', tone: 'up' },
   { id: 'cash', label: 'Cash', value: '6.2%', sub: '5% floor' },
